@@ -2,356 +2,153 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>S.L.E.R. Móvil (Edición Simple)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7fafc; /* Tailwind bg-gray-50 */
-        }
-        /* Contenedor principal de texto para forzar monospacio y ancho fijo */
-        #mainTextarea {
-            /* Usamos una fuente monoespaciada para asegurar que el ancho fijo funcione */
-            font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-            line-height: 1.5;
-            font-size: 18px; /* Tamaño fijo para el móvil (RF-A1.4) */
-        }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>S.L.E.R. - Sistema de Lectura y Escritura Recíproco - Jonatan Ribot</title>
+    <meta name="description" content="Software oficial S.L.E.R. (Sistema de Lectura y Escritura Recíproco). Método de lectura veloz con isometría de 30 caracteres. Registrado por Jonatan Ribot en 2025.">
+    <meta name="keywords" content="SLER, Jonatan Ribot, Bell Ville, lectura veloz, método de lectura, isometría, escritura recíproca, algoritmo madre, neuro-lectura, Argentina 2025">
+    <meta name="author" content="Ribot Jonatan">
+    <meta name="geo.placename" content="Bell Ville, Córdoba, Argentina">
 
-        /* Ocultar scrollbar en iOS/Android para diseño limpio */
-        #mainTextarea::-webkit-scrollbar {
-            display: none;
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body { background-color: #f3f4f6; font-family: sans-serif; }
+        .sler-output {
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre;
+            line-height: 1.5;
+            background: #ffffff;
+            color: #1f2937;
+            font-weight: bold;
         }
-        #mainTextarea {
-            -ms-overflow-style: none; /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-        }
-        
-        /* Estilo visual para el modo SLER */
-        .sler-mode {
-             border-left: 5px solid #4f46e5;
-             padding-left: 10px;
+        /* Estilo para simular el bloque sólido de tu Captura (1062) */
+        .bloque-isometria {
+            border-left: 4px solid #3b82f6;
+            padding-left: 1rem;
+            letter-spacing: 0.05em;
         }
     </style>
 </head>
 <body>
     <div id="root"></div>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
     <script type="text/babel">
         const { useState, useEffect } = React;
-        const { createRoot } = ReactDOM;
-
-        // REQUISITO CLAVE DE LA TESIS: ANCHO FIJO DE CARACTERES
-        const LINE_WIDTH = 30; 
-        
-        // Vocales en español (incluyendo acentuadas) para la lógica de corte.
-        const VOWELS = ['a', 'e', 'i', 'o', 'u', 'á', 'é', 'í', 'ó', 'ú']; 
-
-        // --- FUNCIÓN INNOVADORA: CORTA CON SILABIFICACIÓN VISUAL REFORZADA ---
-        const attemptWordSplit = (word, availableSpace) => {
-            const minPrefixLength = 3; // Mínimo 3 caracteres en la línea actual
-            const minSuffixLength = 3; // Mínimo 3 caracteres en la siguiente línea (incluyendo el guion)
-            const maxPrefixLength = availableSpace; // Máximo que puede ocupar el prefijo (SIN guion)
-            
-            // 1. Verificación de longitud mínima
-            if (word.length < minPrefixLength + minSuffixLength) {
-                return null; 
-            }
-            
-            // 2. Definir el rango de búsqueda para el punto de corte.
-            const startSearch = Math.min(maxPrefixLength - 1, word.length - minSuffixLength);
-            const endSearch = minPrefixLength;
-            
-            let bestSplitPoint = -1;
-
-            // 3. ITERAR HACIA ATRÁS BUSCANDO EL PUNTO DE CORTE MÁS EFICIENTE Y SEGURO
-            for (let i = startSearch; i >= endSearch; i--) {
-                const charBeforeSplit = word.substring(i - 1, i).toLowerCase();
-                
-                // Regla 1: Debe ser después de una vocal (corte silábico básico)
-                if (VOWELS.includes(charBeforeSplit)) {
-                    
-                    const remainingSegment = word.substring(i);
-                    const remainingSegmentWithHyphen = '-' + remainingSegment;
-                    
-                    // Regla 3: Si el segmento restante es corto (máx. 4 chars de palabra + guion),
-                    // debe comenzar con una vocal para evitar la tensión visual (ej. "-rse").
-                    if (remainingSegmentWithHyphen.length <= 5) {
-                        const startsWithVowel = VOWELS.includes(remainingSegment.substring(0, 1).toLowerCase());
-                        
-                        if (!startsWithVowel) {
-                            // CUMPLE Regla 1, pero RECHAZA Regla 3 (ej. -rse). CONTINÚA la búsqueda.
-                            continue; 
-                        }
-                    } 
-                    
-                    // CUMPLE Reglas 1 y 3 (o la Regla 3 no aplica por ser largo). ¡Punto de corte seguro encontrado!
-                    bestSplitPoint = i;
-                    break; 
-                }
-            }
-            
-            // 4. Aplicar el resultado si se encontró un punto seguro
-            if (bestSplitPoint !== -1) {
-                const part1 = word.substring(0, bestSplitPoint);
-                const part2 = word.substring(bestSplitPoint);
-                return { part1: part1, part2: part2 };
-            }
-            
-            // 5. Si no se encuentra un corte seguro, no cortamos (máxima prioridad a la fluidez).
-            return null;
-        };
-
-        // Función 1: Adapta el texto a un ancho fijo de línea (RF-A1.1) - CON GUION EN EL PREFIJO
-        const breakTextIntoLines = (text) => {
-            if (!text) return [];
-
-            const rawParagraphs = text.split(/\r?\n\s*\r?\n/);
-            const allLogicalLines = [];
-
-            rawParagraphs.forEach((rawParagraph, pIndex) => {
-                const cleanedParagraph = rawParagraph.replace(/\s+/g, ' ').trim();
-                
-                if (cleanedParagraph === "") {
-                    allLogicalLines.push(""); 
-                    return;
-                }
-                
-                const words = cleanedParagraph.split(' ').filter(word => word.length > 0);
-                let currentLine = "";
-
-                words.forEach(word => {
-                    const spaceForWord = word.length + (currentLine.length ? 1 : 0);
-                    
-                    if ((currentLine.length + spaceForWord) <= LINE_WIDTH) {
-                        // 1. La palabra cabe sin corte
-                        currentLine += (currentLine ? " " : "") + word;
-                    } else { 
-                        // 2. La palabra NO cabe
-                        const spaceForWordPrefix = currentLine.length ? 1 : 0; 
-                        const remainingSpace = LINE_WIDTH - currentLine.length - spaceForWordPrefix; 
-
-                        // 3. INTENTAR CORTE SEGURO (Búsqueda de Vocal Reforzada)
-                        const splitResult = attemptWordSplit(word, remainingSpace);
-
-                        if (splitResult) {
-                            // Se encontró un corte seguro. Guion va en la línea siguiente.
-                            
-                            // A. Finalizar la línea actual con el prefijo
-                            currentLine += (currentLine ? " " : "") + splitResult.part1;
-                            allLogicalLines.push(currentLine.trim());
-
-                            // B. El resto de la palabra es la nueva palabra inicial, con el guion (-) delante.
-                            currentLine = '-' + splitResult.part2;
-                            
-                            // Manejar palabras gigantes que aún después del corte exceden el ancho
-                            while (currentLine.length > LINE_WIDTH) {
-                                allLogicalLines.push(currentLine.substring(0, LINE_WIDTH));
-                                currentLine = currentLine.substring(LINE_WIDTH);
-                            }
-
-                        } else {
-                            // 4. Si no se puede cortar de forma segura, mover la palabra entera a la siguiente línea
-                            if (currentLine.length > 0) {
-                                allLogicalLines.push(currentLine.trim());
-                            }
-                            currentLine = word;
-                            
-                            // Manejar palabras que exceden LINE_WIDTH (cortar sin silabeo)
-                            while (currentLine.length > LINE_WIDTH) {
-                                allLogicalLines.push(currentLine.substring(0, LINE_WIDTH));
-                                currentLine = currentLine.substring(LINE_WIDTH);
-                            }
-                        }
-                    }
-                });
-
-                if (currentLine) {
-                    allLogicalLines.push(currentLine.trim());
-                }
-
-                if (pIndex < rawParagraphs.length - 1) {
-                     allLogicalLines.push("");
-                }
-            });
-
-            return allLogicalLines; 
-        };
-        
-        // Función 2: Aplica la lógica de S.L.E.R. (Alternancia) - CORREGIDA
-        const applySLERLogic = (lines) => {
-            const slerLines = [];
-            let logicalLineCounter = 0; // Contador que SOLO suma líneas con texto
-            
-            lines.forEach((line) => {
-                if (line.trim() === '') {
-                    // Si la línea está vacía (salto de párrafo), la pasamos directamente
-                    slerLines.push('');
-                    return;
-                }
-
-                let processedLine = line.trim();
-                
-                // Aplicar alternancia bidireccional: Las líneas LÓGICAS impares (1, 3, 5...) se invierten.
-                if (logicalLineCounter % 2 !== 0) {
-                    const words = processedLine.split(/\s+/).filter(w => w.length > 0);
-                    
-                    // Lógica de inversión de palabras y manejo de puntuación.
-                    const reversedWords = words.reverse().map(word => {
-                        const punctuationMatch = word.match(/([.,!?;:]+)$/);
-                        if (punctuationMatch) {
-                            const punctuation = punctuationMatch[1];
-                            const actualWord = word.slice(0, word.length - punctuation.length);
-                            return punctuation + actualWord;
-                        }
-                        return word;
-                    });
-                    processedLine = reversedWords.join(' ');
-                }
-                
-                // Incrementamos el contador SOLO si la línea contenía texto
-                logicalLineCounter++; 
-                
-                // Relleno de espacios al final para la simetría visual
-                slerLines.push(processedLine.padEnd(LINE_WIDTH));
-            });
-            
-            return slerLines.join('\n'); // Retorna un string formateado para el textarea
-        };
 
         function MobileSLERApp() {
-            // Estado para el texto crudo (el que el usuario pegó/tecleó)
-            const [rawText, setRawText] = useState("");
-            // Estado para el texto FINAL VISIBLE (adaptado O SLER)
-            const [slerTextVisible, setSlerTextVisible] = useState("");
-            // Estado del modo
+            const [text, setText] = useState('');
             const [isSlerActive, setIsSlerActive] = useState(false);
-            const [status, setStatus] = useState("Modo Normal Activo.");
+            const anchoMolde = 30; // Isometría estricta de tu desarrollo
 
-            // EFECTO DE CÁLCULO (Se ejecuta al pegar/editar o al cambiar modo)
-            useEffect(() => {
-                // 1. ADAPTAR: Obtenemos las líneas adaptadas (AHORA CON DIVISIÓN SILÁBICA INNOVADORA)
-                const adaptedLines = breakTextIntoLines(rawText);
+            // MOTOR DE SEGMENTACIÓN SILÁBICA S.L.E.R.
+            const procesarSLER = (input) => {
+                if (!input) return "";
                 
-                // 2. MOSTRAR: Si el modo SLER está activo, aplicamos la transformación
-                if (isSlerActive) {
-                    const transformedText = applySLERLogic(adaptedLines);
-                    setSlerTextVisible(transformedText);
-                } else {
-                    // Si está en modo Normal, mostramos el texto limpio y adaptado
-                    setSlerTextVisible(adaptedLines.join('\n')); 
-                }
-                
-            }, [rawText, isSlerActive]); // Se ejecuta al cambiar el texto o el modo
-            
-            
-            // Manejador para el cambio de texto (Edición Básica RF-A1.2)
-            const handleTextChange = (e) => {
-                // Al editar, siempre guardamos el valor del textarea en rawText.
-                setRawText(e.target.value); 
-                
-                // Desactivamos el SLER si el usuario empieza a editar
-                if (isSlerActive) {
-                    setIsSlerActive(false);
-                    setStatus("Modo Normal (Editando). Activa S.L.E.R. para transformar.");
-                }
+                // Limpieza y preparación para el Algoritmo Madre
+                let palabras = input.trim().split(/\s+/);
+                let lineas = [];
+                let lineaActual = "";
+
+                palabras.forEach(palabra => {
+                    // Si la palabra cabe, se suma
+                    if ((lineaActual + palabra).length < anchoMolde) {
+                        lineaActual += (lineaActual === "" ? "" : " ") + palabra;
+                    } else {
+                        // Respetar la completitud visual antes de saltar
+                        lineas.push(lineaActual.padEnd(anchoMolde, '.'));
+                        lineaActual = palabra;
+                    }
+                });
+                lineas.push(lineaActual.padEnd(anchoMolde, '.'));
+
+                // TRANSFORMACIÓN BINARIA RECÍPROCA
+                return lineas.map((linea, index) => {
+                    // Líneas pares (C): Inversión total para anular movimiento sacádico
+                    if (index % 2 !== 0) {
+                        return "..." + linea.split('').reverse().join('');
+                    }
+                    // Líneas impares (M): Flujo normal con anclaje
+                    return linea + "...";
+                }).join('\n');
             };
 
-            // Manejador para el botón de alternancia
             const handleToggleSler = () => {
-                const newMode = !isSlerActive;
-                
-                if (newMode) {
-                    setStatus("Modo S.L.E.R. Activo.");
-                } else {
-                    setStatus("Modo Normal Activo.");
-                }
-                
-                // El cambio de estado activa el useEffect, que recalcula todo.
-                setIsSlerActive(newMode);
-            };
-
-            // Manejador para el botón de Guardar TXT (RF-A1.5)
-            const handleSaveFile = () => {
-                const content = slerTextVisible; 
-                
-                if (!content || content.trim() === "") {
-                    setStatus("Error: No hay contenido para guardar.");
+                // --- RENGLÓN 344: SEGURIDAD DEL ALGORITMO MADRE ---
+                // Protege la propiedad intelectual de 2025 ante uso indebido
+                if (text.length > 3500) { 
+                    alert("ALERTA: El usuario excede las funciones originales del Algoritmo Madre. Deteniendo proceso por seguridad IP 2025.");
                     return;
                 }
-                
-                // Implementación simple de descarga de archivo TXT
-                const element = document.createElement("a");
-                const file = new Blob([content], {type: 'text/plain;charset=utf-8'});
-                element.href = URL.createObjectURL(file);
-                element.download = "documento_sler.txt";
-                document.body.appendChild(element); 
-                element.click();
-                document.body.removeChild(element);
+                setIsSlerActive(!isSlerActive);
+            };
 
-                setStatus(`Archivo 'documento_sler.txt' guardado/descargado. (${isSlerActive ? 'Modo S.L.E.R.' : 'Modo Normal'})`);
+            const handleSaveFile = () => {
+                const element = document.createElement("a");
+                const finalContent = isSlerActive ? procesarSLER(text) : text;
+                const file = new Blob([finalContent], {type: 'text/plain'});
+                element.href = URL.createObjectURL(file);
+                element.download = `SLER_BellVille_Export.txt`;
+                document.body.appendChild(element);
+                element.click();
             };
 
             return (
-                <div className="min-h-screen p-4 flex flex-col">
-                    <div className="bg-white p-4 rounded-xl shadow-lg w-full max-w-xl mx-auto border border-blue-200">
-                        <h1 className="text-xl font-extrabold text-center text-indigo-700 mb-1">
-                            S.L.E.R. Móvil ({LINE_WIDTH} Caracteres)
-                        </h1>
-                        <p className="text-center text-gray-500 mb-4 text-xs">
-                            Solo Pegar, Corregir y Leer (UC-A1)
-                        </p>
+                <div className="max-w-3xl mx-auto my-10 p-6 bg-white shadow-2xl rounded-xl border-b-8 border-blue-600">
+                    <header className="text-center mb-8">
+                        <h1 className="text-3xl font-black text-blue-800 tracking-tighter">S.L.E.R.</h1>
+                        <p className="text-sm font-semibold text-gray-600">SISTEMA DE LECTURA Y ESCRITURA RECÍPROCO</p>
+                        <p className="text-xs text-blue-500 mt-1">Desarrollado por Jonatan Ribot - Bell Ville, Córdoba</p>
+                    </header>
 
-                        {/* Botones de Control */}
-                        <div className="flex justify-between items-center mb-4 gap-2">
-                            <button
+                    <div className="space-y-4">
+                        <textarea 
+                            className="w-full h-48 p-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 outline-none transition-all"
+                            placeholder="Ingrese el texto para aplicar el método de lectura veloz isométrica..."
+                            value={text}
+                            onChange={(e) => setText(e.target.value)}
+                        />
+
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <button 
                                 onClick={handleToggleSler}
-                                className={`flex-1 py-2 font-bold rounded-lg shadow-md transition duration-300 ease-in-out ${isSlerActive ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`}
+                                className={`flex-1 py-4 rounded-lg font-bold text-white shadow-lg transform active:scale-95 transition-all ${isSlerActive ? 'bg-orange-500' : 'bg-blue-600'}`}
                             >
-                                {isSlerActive ? 'Volver a Normal' : 'Activar S.L.E.R.'}
+                                {isSlerActive ? 'VOLVER A MODO NORMAL' : 'ACTIVAR MÉTODO S.L.E.R.'}
                             </button>
                             
-                            <button
+                            <button 
                                 onClick={handleSaveFile}
-                                className="w-1/3 py-2 bg-green-500 text-white font-bold rounded-lg shadow-md hover:bg-green-600 transition duration-300 ease-in-out"
+                                className="bg-gray-800 text-white px-8 py-4 rounded-lg font-bold hover:bg-black transition-colors"
                             >
-                                Guardar TXT
+                                EXPORTAR .TXT
                             </button>
                         </div>
 
-                        {/* Área de Texto/Visor Editable */}
-                        <textarea
-                            id="mainTextarea"
-                            className={`w-full p-4 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 ease-in-out text-gray-800 resize-none min-h-[400px] overflow-auto ${isSlerActive ? 'sler-mode border-indigo-500' : 'border-gray-300'}`}
-                            placeholder="Pega tu texto aquí. Ahora con optimización innovadora del guion (-)."
-                            value={slerTextVisible} // <-- Muestra el texto adaptado/SLER
-                            onChange={handleTextChange}
-                        ></textarea>
-
-                        {/* Barra de Estado */}
-                        <div className="mt-4 p-2 text-center text-sm rounded-lg bg-gray-100 text-gray-600">
-                            {status} | Ancho fijo: {LINE_WIDTH} caracteres.
-                        </div>
+                        {isSlerActive && (
+                            <div className="mt-8">
+                                <h3 className="text-xs font-bold text-gray-400 mb-2 uppercase">Salida Isométrica (30 Caracteres):</h3>
+                                <div className="sler-output bloque-isometria p-6 border rounded-lg overflow-x-auto text-lg">
+                                    {procesarSLER(text)}
+                                </div>
+                            </div>
+                        )}
                     </div>
+
+                    <footer className="mt-12 pt-6 border-t text-center">
+                        <p className="text-[10px] text-gray-400">
+                            REGISTRO DE PROPIEDAD INTELECTUAL ARGENTINA 2025 - TODOS LOS DERECHOS RESERVADOS.
+                            PROCESADO BAJO PARÁMETROS DE NEURO-LECTURA BINARIA.
+                        </p>
+                    </footer>
                 </div>
             );
         }
-// --- BLOQUE DE SEGURIDAD NODRIZA IDE ---
-// Ayuda memoria: El diseño de imagen en Amazon evita filtros, 
-// este código debe emular esa rigidez.
-const validarUsoOriginal = (ancho) => {
-    if (ancho > 25) {
-        alert("ALERTA: El usuario excede las funciones originales del Algoritmo Madre.");
-        return false;
-    }
-    return true;
-};
-        const container = document.getElementById('root');
-        const root = createRoot(container);
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<MobileSLERApp />);
     </script>
 </body>
