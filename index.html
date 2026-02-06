@@ -8,10 +8,9 @@
         body { background-color: #f1f5f9; font-family: 'Segoe UI', sans-serif; }
         .sler-card { max-width: 1000px; margin: 2rem auto; background: white; border-radius: 1.2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
         
-        /* Forzamos scroll vertical en ambos para igualar anchos de molde */
-        #mainInput, .output-box {
+        /* Simetría de Scroll: Forzamos la aparición del carril en ambos */
+        #mainInput {
             overflow-y: scroll !important;
-            overflow-x: hidden !important;
         }
 
         .output-box { 
@@ -19,14 +18,28 @@
             padding: 1.5rem 2.5rem; 
             min-height: 350px; font-family: 'Consolas', monospace; font-size: 1.15rem; 
             line-height: 1.7; color: #1a202c; outline: none;
+            /* Refuerzo para forzar scrollbar en DIV */
+            overflow-y: scroll !important; 
+            display: block;
         }
 
         .sler-line { display: block; white-space: pre; width: 100%; }
         ::selection { background: #00e5ff; color: #000; }
         
-        /* Estética de scroll compartida */
-        ::-webkit-scrollbar { width: 10px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        /* Personalización de scroll para asegurar que se vea igual en ambos */
+        ::-webkit-scrollbar { 
+            width: 12px; 
+            display: block !important;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb { 
+            background: #cbd5e1; 
+            border: 3px solid #f8fafc;
+            border-radius: 10px; 
+        }
     </style>
 </head>
 <body>
@@ -76,15 +89,14 @@
             const span = document.createElement('span');
             span.style.font = "1.15rem 'Consolas', monospace";
             span.innerText = "W"; document.body.appendChild(span);
-            // Calibración restando el ancho fijo de la barra de scroll (10px) y padding
-            maxM = Math.floor((ed.clientWidth - 95) / span.offsetWidth);
+            // Calibración compensando el ancho del scrollbar forzado (12px + padding)
+            maxM = Math.floor((ed.clientWidth - 100) / span.offsetWidth);
             mLab.innerText = maxM; 
             document.body.removeChild(span);
         }
         window.onresize = cal;
         setTimeout(cal, 200);
 
-        // APLANADO DE MASA
         mainInput.addEventListener('paste', (e) => {
             e.preventDefault();
             const text = (e.originalEvent || e).clipboardData.getData('text/plain');
@@ -119,11 +131,10 @@
                     lin += (lin ? " " : "") + mazo.shift();
                 }
                 
-                // PARTICIÓN QUIRÚRGICA: Evita letras huérfanas [cite: 2026-01-20]
                 let h = maxM - lin.length;
                 if (h >= 3 && mazo.length > 0) {
                     let p = mazo[0], corte = h - 1;
-                    // Solo corta si quedan al menos 2 caracteres de cada lado para evitar el error de la CP 1327
+                    // REGLA: Mínimo 2 caracteres antes y después del guion
                     if (corte >= 2 && (p.length - corte) >= 2) {
                         if (!par) lin += (lin ? " " : "") + p.substring(0, corte) + "-";
                         else lin += (lin ? " " : "") + "-" + p.substring(0, corte);
@@ -148,12 +159,12 @@
             if (!esSlerActivo) {
                 renderSler();
                 document.getElementById('btnSler').innerText = "RESTABLECER MASA";
-                document.getElementById('btnSler').classList.replace('bg-blue-600', 'bg-orange-600');
+                document.getElementById('btnSler').style.backgroundColor = "#ea580c";
                 esSlerActivo = true;
             } else {
                 ed.innerHTML = "";
                 document.getElementById('btnSler').innerText = "EJECUTAR S.L.E.R.";
-                document.getElementById('btnSler').classList.replace('bg-orange-600', 'bg-blue-600');
+                document.getElementById('btnSler').style.backgroundColor = "#2563eb";
                 esSlerActivo = false;
             }
         };
