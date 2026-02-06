@@ -11,23 +11,92 @@
             font-family: 'Courier New', Courier, monospace;
             white-space: pre;
             line-height: 1.6;
-            background: #ffffff;
             color: #1f2937;
             font-weight: 400; 
-            font-size: 1.125rem;
+            font-size: 1.1rem;
         }
-        .bloque-sler { border-left: 4px solid #3b82f6; padding-left: 1.5rem; }
+        .contenedor-principal {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
 
-    <div class="max-w-3xl mx-auto my-10 p-6 bg-white shadow-2xl rounded-xl border-b-8 border-blue-600">
+    <div class="contenedor-principal">
         <header class="text-center mb-8">
-            <h1 class="text-3xl font-black text-blue-800 tracking-tighter">S.L.E.R.</h1>
-            <p class="text-sm font-semibold text-gray-600 uppercase">Sistema de Lectura y Escritura Recíproco</p>
-            <p class="text-xs text-blue-500 mt-1">Jonatan Ribot - Bell Ville - IP 2025 Argentina</p>
+            <h1 class="text-4xl font-black text-blue-700 tracking-tighter">S.L.E.R.</h1>
+            <p class="text-md font-bold text-gray-600 uppercase">Sistema de Lectura y Escritura Recíproco</p>
+            <p class="text-sm text-blue-500 font-medium">Jonatan Ribot - Bell Ville - IP 2025 Argentina</p>
         </header>
 
-        <div class="space-y-4">
+        <div class="space-y-6">
             <textarea id="inputText"
-                class="w-full h-
+                class="w-full h-56 p-6 border-2 border-gray-100 rounded-xl focus:border-blue-400 outline-none font-mono text-gray-700 shadow-sm resize-none"
+                placeholder="Escriba aquí respetando la isometría de 30 caracteres..."></textarea>
+
+            <div class="flex flex-col sm:flex-row gap-4">
+                <button id="btnSler" class="flex-1 py-4 rounded-xl font-bold text-white shadow-lg bg-blue-600 hover:bg-blue-700 transition-all uppercase tracking-wider">
+                    Modo Normal
+                </button>
+                <button id="btnOpenModal" class="bg-gray-800 text-white px-10 py-4 rounded-xl font-bold hover:bg-black transition-all uppercase tracking-wider">
+                    Imprimir / Exportar
+                </button>
+            </div>
+
+            <div id="slerDisplay" class="mt-10 hidden border-t pt-8">
+                <p class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-widest">Salida Isométrica (30 caracteres):</p>
+                <div id="outputArea" class="sler-output bg-blue-50/30 p-8 rounded-2xl border border-blue-100 overflow-x-auto"></div>
+            </div>
+        </div>
+
+        <footer class="mt-12 pt-8 border-t text-center">
+            <p class="text-[10px] text-gray-400 font-bold tracking-[0.2em]">PROPIEDAD INTELECTUAL REGISTRADA 2025 - ARGENTINA</p>
+        </footer>
+    </div>
+
+    <div id="modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white p-10 rounded-3xl max-w-md w-full shadow-2xl">
+            <h2 class="font-bold text-2xl text-gray-800 mb-2 text-center">Configurar Extensión Isométrica</h2>
+            <p class="text-center text-gray-500 text-sm mb-8">Ajuste el ancho del molde para la impresión.</p>
+            
+            <input type="range" id="rangeInput" min="30" max="120" value="30" 
+                class="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer accent-blue-600">
+            
+            <div id="rangeDisplay" class="text-center font-mono text-3xl font-black text-blue-600 my-8">30 caracteres</div>
+            
+            <div class="flex gap-4">
+                <button id="btnPrint" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 shadow-lg transition-all">Imprimir</button>
+                <button id="btnClose" class="flex-1 bg-gray-100 text-gray-600 py-4 rounded-2xl font-bold hover:bg-gray-200 transition-all">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ANCHO_FIJO = 30;
+        let slerActivo = false;
+
+        const input = document.getElementById('inputText');
+        const output = document.getElementById('outputArea');
+        const display = document.getElementById('slerDisplay');
+        const btnSler = document.getElementById('btnSler');
+        const modal = document.getElementById('modal');
+        const range = document.getElementById('rangeInput');
+        const rangeText = document.getElementById('rangeDisplay');
+
+        // LÓGICA DE SEGMENTACIÓN (ALGORITMO MADRE)
+        function procesar(texto, ancho) {
+            if (!texto) return "";
+            let palabras = texto.trim().split(/\s+/);
+            let lineas = [];
+            let actual = "";
+
+            palabras.forEach(p => {
+                let disp = ancho - actual.length - (actual ? 1 : 0);
+                if (p.length <= disp) {
+                    actual += (actual ? " " : "") + p;
+                } else if (p
