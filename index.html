@@ -124,4 +124,59 @@
 
         function renderSler() {
             let txt = mainInput.value;
-            if (!txt.trim()) return
+            if (!txt.trim()) return;
+            let mazo = txt.replace(/\s+/g, ' ').trim().split(' ');
+            let res = "", par = false;
+
+            while (mazo.length > 0) {
+                let lin = "";
+                while (mazo.length > 0 && (lin.length + mazo[0].length + 1) <= maxM) {
+                    lin += (lin ? " " : "") + mazo.shift();
+                }
+                
+                let h = maxM - lin.length;
+                if (h >= 3 && mazo.length > 0) {
+                    let p = mazo[0], corte = h - 1;
+                    if (corte >= 2 && (p.length - corte) >= 2) {
+                        if (!par) lin += (lin ? " " : "") + p.substring(0, corte) + "-";
+                        else lin += (lin ? " " : "") + "-" + p.substring(0, corte);
+                        mazo[0] = p.substring(corte);
+                    }
+                }
+
+                let pad = " ".repeat(Math.max(0, maxM - lin.length));
+                if (par) {
+                    let inv = lin.split(' ').map(w => tratarSignos(w, true)).reverse().join(' ');
+                    let padInv = " ".repeat(Math.max(0, maxM - inv.length));
+                    res += `<span class="sler-line">......${padInv}${inv}</span>`;
+                } else {
+                    res += `<span class="sler-line">${lin}${pad}......</span>`;
+                }
+                par = !par;
+            }
+            ed.innerHTML = res;
+        }
+
+        document.getElementById('btnSler').onclick = () => {
+            if (!esSlerActivo) {
+                renderSler();
+                document.getElementById('btnSler').innerText = "RESTABLECER MASA";
+                document.getElementById('btnSler').style.backgroundColor = "#ea580c";
+                esSlerActivo = true;
+            } else {
+                ed.innerHTML = "";
+                document.getElementById('btnSler').innerText = "EJECUTAR S.L.E.R.";
+                document.getElementById('btnSler').style.backgroundColor = "#2563eb";
+                esSlerActivo = false;
+            }
+        };
+
+        document.getElementById('btnExport').onclick = () => {
+            if (!ed.innerText) return alert("Ejecute S.L.E.R. primero.");
+            const blob = new Blob(["REGISTRO IP 2025 - JONATAN RIBOT\n\n" + ed.innerText], {type: 'text/plain'});
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = "obra_sler.txt"; a.click();
+        };
+    </script>
+</body>
+</html>
