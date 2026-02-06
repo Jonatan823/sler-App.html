@@ -8,13 +8,13 @@
         body { background-color: #f1f5f9; font-family: 'Segoe UI', sans-serif; }
         .sler-card { max-width: 1000px; margin: 2rem auto; background: white; border-radius: 1.2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
         
-        /* Simetría Total de Altura y Comportamiento */
+        /* Simetría Isométrica con Scroll Forzado */
         #mainInput, .output-box {
-            overflow-y: scroll !important; /* Forzado para mantener el ancho del molde invariable */
+            overflow-y: scroll !important;
             overflow-x: hidden !important;
             display: block;
             scrollbar-gutter: stable;
-            height: 208px; /* Altura idéntica al textarea h-52 superior */
+            height: 208px; /* Altura idéntica h-52 */
         }
 
         .output-box { 
@@ -27,19 +27,18 @@
         .sler-line { display: block; white-space: pre; width: 100%; }
         ::selection { background: #00e5ff; color: #000; }
         
-        /* Relieve de Scroll para el encuadre interno */
+        /* Relieve de Scroll (Fondo para evitar cruce tectónico) */
         ::-webkit-scrollbar { width: 14px; }
         ::-webkit-scrollbar-track { 
-            background: #f1f5f9; 
+            background: #f8fafc; 
             border-left: 1px solid #e2e8f0;
             border-radius: 0 1rem 1rem 0;
         }
         ::-webkit-scrollbar-thumb { 
             background: #cbd5e1; 
-            border: 3px solid #f1f5f9; 
+            border: 3px solid #f8fafc; 
             border-radius: 10px; 
         }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body>
@@ -89,8 +88,8 @@
             const span = document.createElement('span');
             span.style.font = "1.15rem 'Consolas', monospace";
             span.innerText = "W"; document.body.appendChild(span);
-            // Calibración compensando el canal del scrollbar (14px + padding)
-            maxM = Math.floor((ed.clientWidth - 110) / span.offsetWidth);
+            // Calibración agresiva compensando el carril de 14px
+            maxM = Math.floor((ed.clientWidth - 105) / span.offsetWidth);
             mLab.innerText = maxM; 
             document.body.removeChild(span);
         }
@@ -100,15 +99,12 @@
         mainInput.addEventListener('paste', (e) => {
             e.preventDefault();
             const text = (e.originalEvent || e).clipboardData.getData('text/plain');
-            const clean = text.replace(/[\u201C\u201D]/g, '"').replace(/[\u2018\u2019]/g, "'").replace(/\u2014/g, "--").replace(/\r\n/g, "\n").replace(/\t/g, " ");
+            const clean = text.replace(/[\u201C\u201D]/g, '"').replace(/[\u2018\u2019]/g, "'").replace(/\u2014/g, "--").replace(/\r\n/g, " ").replace(/\t/g, " ").replace(/\s+/g, " ");
             document.execCommand("insertText", false, clean);
         });
 
         mainInput.oninput = () => tLab.innerText = mainInput.value.length;
-
-        document.addEventListener('selectionchange', () => {
-            sLab.innerText = window.getSelection().toString().length;
-        });
+        document.addEventListener('selectionchange', () => { sLab.innerText = window.getSelection().toString().length; });
 
         function tratarSignos(p, inv) {
             if (!inv) return p;
@@ -122,18 +118,23 @@
         function renderSler() {
             let txt = mainInput.value;
             if (!txt.trim()) return;
-            let mazo = txt.replace(/\s+/g, ' ').trim().split(' ');
+            // Aplanado Total: Una sola tira de palabras
+            let mazo = txt.trim().split(/\s+/);
             let res = "", par = false;
 
             while (mazo.length > 0) {
                 let lin = "";
+                // Llenado de línea hasta el límite del molde
                 while (mazo.length > 0 && (lin.length + mazo[0].length + 1) <= maxM) {
                     lin += (lin ? " " : "") + mazo.shift();
                 }
                 
-                let h = maxM - lin.length;
-                if (h >= 3 && mazo.length > 0) {
-                    let p = mazo[0], corte = h - 1;
+                // OPTIMIZACIÓN DE EXTREMOS: Guionado Quirúrgico
+                let sobrante = maxM - lin.length;
+                if (sobrante >= 3 && mazo.length > 0) {
+                    let p = mazo[0];
+                    let corte = sobrante - 1;
+                    // Solo corta si respeta la sílaba mínima de 2 letras [cite: 2026-01-20]
                     if (corte >= 2 && (p.length - corte) >= 2) {
                         if (!par) lin += (lin ? " " : "") + p.substring(0, corte) + "-";
                         else lin += (lin ? " " : "") + "-" + p.substring(0, corte);
