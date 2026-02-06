@@ -22,6 +22,7 @@
             padding: 2.5rem; 
             margin-top: 1rem;
             min-height: 200px;
+            overflow-x: hidden;
         }
         ::selection { background: #fdba74; color: #000; }
     </style>
@@ -31,14 +32,13 @@
     <div class="sler-card">
         <header class="py-8 text-center bg-white border-b border-blue-50">
             <h1 class="text-4xl font-black text-blue-700 tracking-tighter">S.L.E.R.</h1>
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Sistema de Lectura y Escritura Recíproco</p>
-            <p class="text-[10px] text-blue-400 font-bold mt-2">Jonatan Ribot - Bell Ville - IP 2025 Argentina</p>
+            <p class="text-[10px] text-blue-400 font-bold mt-2">Jonatan Ribot - IP 2025 Argentina</p>
         </header>
 
         <div class="p-8 space-y-4">
-            <div class="flex justify-between items-end">
-                <span id="selectionCount" class="text-[10px] font-black text-orange-600 uppercase bg-orange-50 px-2 py-1 rounded hidden">Selección: 0 car.</span>
-                <span id="charCount" class="text-[10px] font-bold text-blue-500 uppercase">Total: 0 car.</span>
+            <div class="flex justify-between items-center px-1">
+                <span id="selectionCount" class="text-[10px] font-black text-orange-600 uppercase bg-orange-100 px-2 py-1 rounded hidden tracking-widest">SELECCIÓN: 0 CAR.</span>
+                <span id="charCount" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">TOTAL: 0 CAR.</span>
             </div>
             
             <textarea id="main-input" 
@@ -55,8 +55,20 @@
             </div>
 
             <div id="slerSection" class="hidden">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Proceso Isométrico Aplanado:</p>
-                <div id="practice-board" class="output-box" onmouseup="updateSelectionCount()"></div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">PROCESO ISOMÉTRICO FINALIZADO:</p>
+                <div id="practice-board" class="output-box" onmouseup="detectSelection()"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal" class="fixed inset-0 bg-slate-900/70 hidden items-center justify-center p-6 z-50 backdrop-blur-md">
+        <div class="bg-white p-10 rounded-[2.5rem] max-w-sm w-full shadow-2xl">
+            <h2 class="font-black text-xl text-slate-800 mb-6 text-center tracking-tighter">Configurar Extensión</h2>
+            <input type="range" id="rangeInput" min="30" max="120" value="30" class="w-full h-2 mb-4 cursor-pointer accent-blue-600">
+            <div id="rangeDisplay" class="text-center font-mono text-3xl font-black text-blue-600 mb-8">30 car.</div>
+            <div class="flex gap-4">
+                <button id="btnPrint" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700">Imprimir</button>
+                <button id="btnClose" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold">Cerrar</button>
             </div>
         </div>
     </div>
@@ -69,14 +81,12 @@
         const charCount = document.getElementById('charCount');
         const selCountLabel = document.getElementById('selectionCount');
 
-        // Contador de caracteres total
-        input.oninput = () => charCount.innerText = `Total: ${input.value.length} car.`;
+        input.oninput = () => charCount.innerText = `TOTAL: ${input.value.length} CAR.`;
 
-        // Contador de selección con el puntero
-        function updateSelectionCount() {
-            const selection = window.getSelection().toString();
-            if (selection.length > 0) {
-                selCountLabel.innerText = `Selección: ${selection.length} car.`;
+        function detectSelection() {
+            const selectedText = window.getSelection().toString();
+            if (selectedText.length > 0) {
+                selCountLabel.innerText = `SELECCIÓN: ${selectedText.length} CAR.`;
                 selCountLabel.classList.remove('hidden');
             } else {
                 selCountLabel.classList.add('hidden');
@@ -93,10 +103,10 @@
             return sC + l + sA;
         }
 
-        // Algoritmo Madre: Aplanar -> Procesar -> Renderizar
+        // Motor con partición silábica y control de bordes [cite: 2026-01-20]
         function ejecutarMotor(texto, limite) {
             let mazo = texto.replace(/\s+/g, ' ').trim().split(' ');
-            let lineasFinales = [];
+            let lineasHTML = [];
             let par = false;
 
             while (mazo.length > 0) {
@@ -105,42 +115,56 @@
                     lin += (lin ? " " : "") + mazo.shift();
                 }
                 
+                // Partición inteligente: solo si palabra > 6 y no deja vocales solas [cite: 2026-01-20]
                 let h = limite - lin.length;
-                if (mazo.length > 0 && h >= 3 && mazo[0].length >= 6) {
-                    let p = mazo[0], corte = h - 1;
-                    if (corte < 2) corte = 2;
+                if (mazo.length > 0 && h >= 4 && mazo[0].length >= 7) {
+                    let p = mazo[0];
+                    let corte = h - 1;
+                    // Evitar dejar una sola letra aislada al final
+                    const vocales = "aeiouAEIOUáéíóúÁÉÍÓÚ";
+                    if (corte === 1 || (corte === 2 && vocales.includes(p[0]))) corte++;
+                    
                     lin += (lin ? " " : "") + p.substring(0, corte) + "-";
                     mazo[0] = p.substring(corte);
                 }
 
+                // Renderizado sin puntos de relleno en espacios, solo anclajes fijos [cite: 2026-01-23]
                 if (par) {
-                    // Inversión espejo para línea recíproca
                     let inv = lin.split(' ').map(w => tratarSignos(w, true)).reverse().join(' ');
-                    let pad = ".".repeat(Math.max(0, limite - inv.length));
-                    lineasFinales.push(`<div class="sler-line">......${pad}${inv}</div>`);
+                    let pad = " ".repeat(Math.max(0, limite - inv.length));
+                    lineasHTML.push(`<div class="sler-line">......${pad}${inv}</div>`);
                 } else {
-                    let pad = ".".repeat(Math.max(0, limite - lin.length));
-                    lineasFinales.push(`<div class="sler-line">${lin}${pad}......</div>`);
+                    let pad = " ".repeat(Math.max(0, limite - lin.length));
+                    lineasHTML.push(`<div class="sler-line">${lin}${pad}......</div>`);
                 }
                 par = !par;
             }
-            return lineasFinales.join('');
+            return lineasHTML.join('');
         }
 
         btnSler.onclick = () => {
             const lineasInput = input.value.split('\n');
             const maxM = Math.max(...lineasInput.map(l => l.length), 30);
             
-            // Aplanamos y renderizamos de una sola vez
-            const resultadoHTML = ejecutarMotor(input.value, maxM);
-            board.innerHTML = resultadoHTML;
-            
+            // Aplanado y renderizado total [cite: 2026-02-05]
+            board.innerHTML = ejecutarMotor(input.value, maxM);
             section.classList.remove('hidden');
             btnSler.innerText = "SLER ACTIVADO";
             btnSler.classList.replace('bg-blue-600', 'bg-orange-500');
         };
 
-        // ... (Lógica de Modal e Impresión PDF igual a la anterior)
+        // Lógica de Impresión (Sin cambios)
+        const modal = document.getElementById('modal');
+        const range = document.getElementById('rangeInput');
+        const rangeDisplay = document.getElementById('rangeDisplay');
+        document.getElementById('btnOpenModal').onclick = () => modal.classList.replace('hidden', 'flex');
+        document.getElementById('btnClose').onclick = () => modal.classList.replace('flex', 'hidden');
+        range.oninput = () => rangeDisplay.innerText = `${range.value} car.`;
+        document.getElementById('btnPrint').onclick = () => {
+            const win = window.open("", "_blank");
+            win.document.write(`<html><body style="font-family:monospace; padding:50px; white-space:pre;">${ejecutarMotor(input.value, parseInt(range.value)).replace(/<div class="sler-line">/g, '').replace(/<\/div>/g, '\n')}</body></html>`);
+            win.document.close(); win.print();
+        };
     </script>
 </body>
 </html>
