@@ -11,11 +11,12 @@
             background: #ffffff; border: 2px solid #edf2f7; border-radius: 1rem; padding: 2.5rem; 
             overflow-y: scroll; overflow-x: hidden; height: 450px;
             font-family: 'Consolas', 'Courier New', monospace; font-size: 1.15rem; line-height: 1.7; color: #1a202c;
+            white-space: pre-wrap; outline: none;
         }
         .sler-line { display: block; white-space: pre; width: 100%; }
-        .input-mono { font-family: 'Consolas', 'Courier New', monospace; font-size: 1rem; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::selection { background: #00e5ff; color: #000; }
     </style>
 </head>
 <body>
@@ -34,16 +35,14 @@
                 <div>MOLDE: <span id="mChars" class="text-white">---</span></div>
             </div>
             
-            <textarea id="mainInput" class="w-full h-52 p-6 border-2 border-slate-100 rounded-2xl outline-none input-mono text-slate-700 shadow-inner resize-none" placeholder="Pegue su texto aquí..."></textarea>
+            <div id="resultArea">
+                <p class="text-[10px] font-black text-slate-400 uppercase mb-3 ml-2">Editor de Masa / Bloque Isométrico:</p>
+                <div id="editor" class="output-box" contenteditable="true">Pegue su texto de prueba aquí...</div>
+            </div>
 
             <div class="flex gap-4">
                 <button id="btnSler" class="flex-[2] py-5 bg-blue-600 text-white rounded-2xl font-black shadow-lg uppercase text-sm">EJECUTAR S.L.E.R.</button>
                 <button id="btnExport" class="flex-1 bg-slate-800 text-white px-6 py-5 rounded-2xl font-bold uppercase text-xs">IMPRIMIR / EXPORTAR</button>
-            </div>
-
-            <div id="resultArea">
-                <p class="text-[10px] font-black text-slate-400 uppercase mb-3 ml-2">Bloque Isométrico Finalizado:</p>
-                <div id="editor" class="output-box"></div>
             </div>
         </div>
     </div>
