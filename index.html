@@ -6,90 +6,98 @@
     <title>S.L.E.R. - App Oficial - Jonatan Ribot</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #f3f4f6; font-family: sans-serif; }
-        .sler-output {
+        body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .sler-card {
+            max-width: 900px;
+            margin: 2rem auto;
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+        .sler-output-font {
             font-family: 'Courier New', Courier, monospace;
             white-space: pre;
-            line-height: 1.6;
-            color: #1f2937;
-            font-weight: 400; 
-            font-size: 1.1rem;
+            line-height: 1.8;
+            font-weight: 400;
+            color: #334155;
         }
-        .contenedor-principal {
-            max-width: 800px;
-            margin: 40px auto;
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        /* Estilo del área de salida igual a la captura 1302 */
+        .output-container {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-top: 1.5rem;
         }
     </style>
 </head>
 <body>
 
-    <div class="contenedor-principal">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-black text-blue-700 tracking-tighter">S.L.E.R.</h1>
-            <p class="text-md font-bold text-gray-600 uppercase">Sistema de Lectura y Escritura Recíproco</p>
-            <p class="text-sm text-blue-500 font-medium">Jonatan Ribot - Bell Ville - IP 2025 Argentina</p>
+    <div class="sler-card">
+        <header class="bg-white pt-10 pb-6 text-center border-b border-blue-100">
+            <h1 class="text-4xl font-black text-blue-700 tracking-tighter mb-1">S.L.E.R.</h1>
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Sistema de Lectura y Escritura Recíproco</p>
+            <p class="text-[10px] text-blue-400 mt-2">Jonatan Ribot - Bell Ville - IP 2025 Argentina</p>
         </header>
 
-        <div class="space-y-6">
-            <textarea id="inputText"
-                class="w-full h-56 p-6 border-2 border-gray-100 rounded-xl focus:border-blue-400 outline-none font-mono text-gray-700 shadow-sm resize-none"
+        <div class="p-8 space-y-6">
+            <textarea id="inputText" 
+                class="w-full h-48 p-5 border-2 border-gray-100 rounded-xl focus:border-blue-300 outline-none font-sans text-gray-600 shadow-inner resize-none transition-all"
                 placeholder="Escriba aquí respetando la isometría de 30 caracteres..."></textarea>
 
             <div class="flex flex-col sm:flex-row gap-4">
-                <button id="btnSler" class="flex-1 py-4 rounded-xl font-bold text-white shadow-lg bg-blue-600 hover:bg-blue-700 transition-all uppercase tracking-wider">
+                <button id="btnSler" class="flex-1 py-4 bg-blue-600 text-white rounded-xl font-bold shadow-lg hover:bg-blue-700 transition-all uppercase tracking-wide">
                     Modo Normal
                 </button>
-                <button id="btnOpenModal" class="bg-gray-800 text-white px-10 py-4 rounded-xl font-bold hover:bg-black transition-all uppercase tracking-wider">
+                <button id="btnOpenModal" class="bg-slate-800 text-white px-8 py-4 rounded-xl font-bold hover:bg-black transition-all uppercase tracking-wide">
                     Imprimir / Exportar
                 </button>
             </div>
 
-            <div id="slerDisplay" class="mt-10 hidden border-t pt-8">
-                <p class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-widest">Salida Isométrica (30 caracteres):</p>
-                <div id="outputArea" class="sler-output bg-blue-50/30 p-8 rounded-2xl border border-blue-100 overflow-x-auto"></div>
+            <div id="slerSection" class="hidden animate-in fade-in duration-700">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">Salida Isométrica (30 Caracteres):</p>
+                <div class="output-container">
+                    <div id="outputArea" class="sler-output-font text-lg"></div>
+                </div>
             </div>
         </div>
 
-        <footer class="mt-12 pt-8 border-t text-center">
-            <p class="text-[10px] text-gray-400 font-bold tracking-[0.2em]">PROPIEDAD INTELECTUAL REGISTRADA 2025 - ARGENTINA</p>
+        <footer class="bg-slate-50 py-6 text-center border-t border-gray-100">
+            <p class="text-[9px] text-slate-400 font-bold tracking-widest">© 2025 PROPIEDAD INTELECTUAL - BELL VILLE, CÓRDOBA</p>
         </footer>
     </div>
 
-    <div id="modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50 backdrop-blur-sm">
-        <div class="bg-white p-10 rounded-3xl max-w-md w-full shadow-2xl">
-            <h2 class="font-bold text-2xl text-gray-800 mb-2 text-center">Configurar Extensión Isométrica</h2>
-            <p class="text-center text-gray-500 text-sm mb-8">Ajuste el ancho del molde para la impresión.</p>
+    <div id="modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white p-8 rounded-3xl max-w-sm w-full shadow-2xl border border-white">
+            <h2 class="font-bold text-xl text-slate-800 mb-6 text-center">Configurar Extensión Isométrica</h2>
             
             <input type="range" id="rangeInput" min="30" max="120" value="30" 
-                class="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                class="w-full h-1.5 bg-blue-100 rounded-lg appearance-none cursor-pointer accent-blue-600 mb-4">
             
-            <div id="rangeDisplay" class="text-center font-mono text-3xl font-black text-blue-600 my-8">30 caracteres</div>
+            <div id="rangeDisplay" class="text-center font-mono text-2xl font-black text-blue-600 mb-8">30 caracteres</div>
             
-            <div class="flex gap-4">
-                <button id="btnPrint" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 shadow-lg transition-all">Imprimir</button>
-                <button id="btnClose" class="flex-1 bg-gray-100 text-gray-600 py-4 rounded-2xl font-bold hover:bg-gray-200 transition-all">Cerrar</button>
+            <div class="flex gap-3">
+                <button id="btnPrint" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 shadow-md">Imprimir</button>
+                <button id="btnClose" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200">Cerrar</button>
             </div>
         </div>
     </div>
 
     <script>
-        const ANCHO_FIJO = 30;
-        let slerActivo = false;
+        const ANCHO_BASE = 30;
+        let estaActivo = false;
 
         const input = document.getElementById('inputText');
         const output = document.getElementById('outputArea');
-        const display = document.getElementById('slerDisplay');
+        const section = document.getElementById('slerSection');
         const btnSler = document.getElementById('btnSler');
         const modal = document.getElementById('modal');
         const range = document.getElementById('rangeInput');
         const rangeText = document.getElementById('rangeDisplay');
 
-        // LÓGICA DE SEGMENTACIÓN (ALGORITMO MADRE)
-        function procesar(texto, ancho) {
+        // Algoritmo de Segmentación e Inversión
+        function procesarSLER(texto, ancho) {
             if (!texto) return "";
             let palabras = texto.trim().split(/\s+/);
             let lineas = [];
@@ -99,4 +107,60 @@
                 let disp = ancho - actual.length - (actual ? 1 : 0);
                 if (p.length <= disp) {
                     actual += (actual ? " " : "") + p;
-                } else if (p
+                } else if (p.length > 6 && disp >= 3) {
+                    // Mínimo 2 letras por sílaba, sin dejar letras solas
+                    let corte = disp - 1;
+                    if (corte < 2) corte = 2;
+                    if (p.length - corte < 2) corte = p.length - 2;
+                    lineas.push((actual + (actual ? " " : "") + p.substring(0, corte) + "-").padEnd(ancho, '.'));
+                    actual = p.substring(corte);
+                } else {
+                    lineas.push(actual.padEnd(ancho, '.'));
+                    actual = p;
+                }
+            });
+            if (actual) lineas.push(actual.padEnd(ancho, '.'));
+
+            return lineas.map((l, i) => {
+                // Zig-Zag: 6 puntos de anclaje visual
+                return (i % 2 !== 0) ? "......" + l.split('').reverse().join('') : l + "......";
+            }).join('\n');
+        }
+
+        // Regla de Enter Obligatorio al tope
+        input.addEventListener('keydown', (e) => {
+            if (e.key === "Enter" && input.value.length % ANCHO_BASE !== 0) {
+                e.preventDefault();
+                alert("S.L.E.R. - Bell Ville: Complete el renglón al tope para continuar.");
+            }
+        });
+
+        // Toggle Modo SLER
+        btnSler.onclick = () => {
+            estaActivo = !estaActivo;
+            if (estaActivo) {
+                output.innerText = procesarSLER(input.value, ANCHO_BASE);
+                section.classList.remove('hidden');
+                btnSler.innerText = "Volver a Modo Normal";
+                btnSler.classList.replace('bg-blue-600', 'bg-orange-500');
+            } else {
+                section.classList.add('hidden');
+                btnSler.innerText = "Modo Normal";
+                btnSler.classList.replace('bg-orange-500', 'bg-blue-600');
+            }
+        };
+
+        // Modal e Impresión
+        document.getElementById('btnOpenModal').onclick = () => modal.classList.replace('hidden', 'flex');
+        document.getElementById('btnClose').onclick = () => modal.classList.replace('flex', 'hidden');
+        range.oninput = () => rangeText.innerText = `${range.value} caracteres`;
+
+        document.getElementById('btnPrint').onclick = () => {
+            const win = window.open("", "_blank");
+            win.document.write(`<html><body style="font-family:monospace; padding:50px; white-space:pre;">${procesarSLER(input.value, parseInt(range.value))}</body></html>`);
+            win.document.close();
+            win.print();
+        };
+    </script>
+</body>
+</html>
