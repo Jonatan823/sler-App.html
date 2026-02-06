@@ -2,165 +2,117 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S.L.E.R. - App Oficial - Jonatan Ribot</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #f1f5f9; font-family: 'Segoe UI', system-ui, sans-serif; }
-        .sler-card {
-            max-width: 850px;
-            margin: 3rem auto;
-            background: white;
-            border-radius: 2rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-        }
-        /* Estética idéntica al chat/test: Monoespaciado, peso 400 */
-        .sler-output-font {
-            font-family: 'Courier New', Courier, monospace;
-            white-space: pre;
-            line-height: 1.6;
-            font-weight: 400;
-            color: #1e293b;
-            letter-spacing: 0px;
-        }
-        .output-box {
-            background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 1rem;
-            padding: 2rem;
-            margin-top: 1rem;
-            min-height: 100px;
-        }
-        /* Forzar que el textarea use la misma fuente para previsualizar el ancho */
-        .input-mono {
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: 400;
-        }
+        body { background-color: #f1f5f9; font-family: 'Segoe UI', sans-serif; }
+        .sler-card { max-width: 950px; margin: 2rem auto; background: white; border-radius: 1.5rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); overflow: hidden; }
+        .sler-line { font-family: 'Courier New', Courier, monospace; white-space: pre; line-height: 1.6; font-size: 1.1rem; color: #1e293b; }
+        .input-mono { font-family: 'Courier New', Courier, monospace; font-size: 1.1rem; }
+        .output-box { background: white; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 2rem; margin-top: 1rem; }
     </style>
 </head>
 <body>
 
     <div class="sler-card">
-        <header class="py-10 text-center bg-white border-b border-blue-50">
-            <h1 class="text-4xl font-black text-blue-700 tracking-tighter mb-1">S.L.E.R.</h1>
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-[0.3em]">Sistema de Lectura y Escritura Recíproco</p>
+        <header class="py-8 text-center bg-white border-b border-blue-50">
+            <h1 class="text-4xl font-black text-blue-700 tracking-tighter">S.L.E.R.</h1>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Sistema de Lectura y Escritura Recíproco</p>
             <p class="text-[10px] text-blue-400 font-bold mt-2">Jonatan Ribot - Bell Ville - IP 2025 Argentina</p>
         </header>
 
-        <div class="p-10 space-y-6">
-            <textarea id="inputText" 
-                class="w-full h-56 p-6 border-2 border-slate-100 rounded-2xl focus:border-blue-300 outline-none input-mono text-slate-700 shadow-inner resize-none transition-all text-lg"
-                placeholder="Escriba aquí..."></textarea>
+        <div class="p-8 space-y-6">
+            <textarea id="main-input" 
+                class="w-full h-56 p-6 border-2 border-slate-100 rounded-xl focus:border-blue-300 outline-none input-mono text-slate-700 shadow-inner resize-none"
+                placeholder="Escriba aquí su texto..."></textarea>
 
-            <div class="flex flex-col sm:flex-row gap-4">
-                <button id="btnSler" class="flex-[2] py-5 bg-orange-500 text-white rounded-2xl font-black shadow-lg hover:bg-orange-600 transition-all uppercase tracking-wider text-sm">
+            <div class="flex gap-4">
+                <button id="btnSler" class="flex-[2] py-4 bg-blue-600 text-white rounded-xl font-black shadow-lg hover:bg-blue-700 transition-all uppercase tracking-wider">
                     EJECUTAR SLER
                 </button>
-                <button id="btnOpenModal" class="flex-1 bg-slate-800 text-white px-8 py-5 rounded-2xl font-bold hover:bg-black transition-all uppercase tracking-wider text-sm">
-                    IMPRIMIR / EXPORTAR
+                <button id="btnExport" class="flex-1 bg-slate-800 text-white px-8 py-4 rounded-xl font-bold hover:bg-black transition-all uppercase tracking-wider">
+                    EXPORTAR .TXT
                 </button>
             </div>
 
             <div id="slerSection" class="hidden">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 ml-2">Proceso Isométrico:</p>
-                <div class="output-box">
-                    <div id="outputArea" class="sler-output-font text-xl"></div>
-                </div>
-            </div>
-        </div>
-
-        <footer class="bg-slate-50 py-6 text-center border-t border-slate-100">
-            <p class="text-[9px] text-slate-400 font-black tracking-[0.4em]">REGISTRO DE PROPIEDAD INTELECTUAL 2025</p>
-        </footer>
-    </div>
-
-    <div id="modal" class="fixed inset-0 bg-slate-900/70 hidden items-center justify-center p-6 z-50 backdrop-blur-md">
-        <div class="bg-white p-10 rounded-[2.5rem] max-w-sm w-full shadow-2xl">
-            <h2 class="font-black text-xl text-slate-800 mb-6 text-center">Configurar Extensión</h2>
-            <input type="range" id="rangeInput" min="30" max="120" value="30" class="w-full h-2 mb-4 cursor-pointer accent-blue-600">
-            <div id="rangeDisplay" class="text-center font-mono text-3xl font-black text-blue-600 mb-8">30 car.</div>
-            <div class="flex gap-4">
-                <button id="btnPrint" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700">Imprimir</button>
-                <button id="btnClose" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold">Cerrar</button>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Salida Isométrica Dinámica:</p>
+                <div id="practice-board" class="output-box"></div>
             </div>
         </div>
     </div>
 
     <script>
-        const ANCHO_MOLDE = 30;
-        let estaActivo = false;
-
-        const input = document.getElementById('inputText');
-        const output = document.getElementById('outputArea');
-        const section = document.getElementById('slerSection');
-        const btnSler = document.getElementById('btnSler');
-        const modal = document.getElementById('modal');
-        const range = document.getElementById('rangeInput');
-        const rangeText = document.getElementById('rangeDisplay');
-
-        // Algoritmo Madre: Segmentación, Guiones y Zig-Zag
-        function procesar(texto, ancho) {
-            if (!texto) return "";
-            let palabras = texto.trim().split(/\s+/);
-            let lineas = [];
-            let actual = "";
-
-            palabras.forEach(p => {
-                let disp = ancho - actual.length - (actual ? 1 : 0);
-                if (p.length <= disp) {
-                    actual += (actual ? " " : "") + p;
-                } else if (p.length > 6 && disp >= 3) {
-                    let corte = disp - 1;
-                    if (corte < 2) corte = 2;
-                    if (p.length - corte < 2) corte = p.length - 2;
-                    lineas.push((actual + (actual ? " " : "") + p.substring(0, corte) + "-").padEnd(ancho, '.'));
-                    actual = p.substring(corte);
-                } else {
-                    lineas.push(actual.padEnd(ancho, '.'));
-                    actual = p;
-                }
-            });
-            if (actual) lineas.push(actual.padEnd(ancho, '.'));
-
-            return lineas.map((l, i) => {
-                return (i % 2 !== 0) ? "......" + l.split('').reverse().join('') : l + "......";
-            }).join('\n');
+        // Lógica de signos para líneas pares
+        function tratarSignos(p, inv) {
+            if (!inv) return p;
+            let a = p.match(/^([¿¡]+)/), c = p.match(/([.,;!?]+)$/);
+            let l = p;
+            let sA = a ? a[1] : "", sC = c ? c[1] : "";
+            if (sA) l = l.substring(sA.length);
+            if (sC) l = l.substring(0, l.length - sC.length);
+            return sC + l + sA;
         }
 
-        // Regla de Enter: Isometría estricta
-        input.addEventListener('keydown', (e) => {
-            if (e.key === "Enter" && input.value.length % ANCHO_MOLDE !== 0) {
-                e.preventDefault();
-                alert("S.L.E.R.: Complete los 30 caracteres para saltar de renglón.");
-            }
-        });
+        function ejecutarMotor(texto, limite) {
+            let mazo = texto.replace(/\s+/g, ' ').trim().split(' ');
+            let res = "", par = false;
 
-        // Ejecutar SLER
-        btnSler.onclick = () => {
-            estaActivo = !estaActivo;
-            if (estaActivo) {
-                output.innerText = procesar(input.value, ANCHO_MOLDE);
-                section.classList.remove('hidden');
-                btnSler.innerText = "VOLVER A MODO NORMAL";
-                btnSler.classList.replace('bg-orange-500', 'bg-blue-600');
-            } else {
-                section.classList.add('hidden');
-                btnSler.innerText = "EJECUTAR SLER";
-                btnSler.classList.replace('bg-blue-600', 'bg-orange-500');
+            while (mazo.length > 0) {
+                let lin = "";
+                while (mazo.length > 0 && (lin.length + mazo[0].length + (lin ? 1 : 0)) <= limite) {
+                    lin += (lin ? " " : "") + mazo.shift();
+                }
+                
+                // Partición de palabras largas (>6) para mantener isometría [cite: 2026-01-20]
+                let h = limite - lin.length;
+                if (mazo.length > 0 && h >= 3 && mazo[0].length >= 6) {
+                    let p = mazo[0], corte = h - 1;
+                    if (corte < 2) corte = 2;
+                    if (!par) { lin += (lin ? " " : "") + p.substring(0, corte) + "-"; }
+                    else { lin += (lin ? " " : "") + "-" + p.substring(0, corte); }
+                    mazo[0] = p.substring(corte);
+                }
+
+                if (par) {
+                    // Línea invertida: Trata signos y revierte orden de palabras [cite: 2026-01-23]
+                    let inv = lin.split(' ').map(w => tratarSignos(w, true)).reverse().join(' ');
+                    let pad = ".".repeat(Math.max(0, limite - inv.length));
+                    res += `<div class="sler-line">......${pad}${inv}</div>`;
+                } else {
+                    let pad = ".".repeat(Math.max(0, limite - lin.length));
+                    res += `<div class="sler-line">${lin}${pad}......</div>`;
+                }
+                par = !par;
             }
+            return res;
+        }
+
+        document.getElementById('btnSler').onclick = function() {
+            const input = document.getElementById('main-input');
+            const board = document.getElementById('practice-board');
+            const section = document.getElementById('slerSection');
+            
+            if(!input.value.trim()) return;
+
+            // Calculamos el ancho real de la línea más larga escrita por el usuario
+            const lineasInput = input.value.split('\n');
+            const maxM = Math.max(...lineasInput.map(l => l.length), 30);
+
+            board.innerHTML = ejecutarMotor(input.value, maxM);
+            section.classList.remove('hidden');
+            this.innerText = "ACTUALIZAR SLER";
+            this.classList.replace('bg-blue-600', 'bg-orange-500');
         };
 
-        // Modal e Impresión
-        document.getElementById('btnOpenModal').onclick = () => modal.classList.replace('hidden', 'flex');
-        document.getElementById('btnClose').onclick = () => modal.classList.replace('flex', 'hidden');
-        range.oninput = () => rangeText.innerText = `${range.value} car.`;
-
-        document.getElementById('btnPrint').onclick = () => {
-            const win = window.open("", "_blank");
-            win.document.write(`<html><body style="font-family:monospace; padding:40px; white-space:pre;">${procesar(input.value, parseInt(range.value))}</body></html>`);
-            win.document.close();
-            win.print();
+        document.getElementById('btnExport').onclick = function() {
+            const content = document.getElementById('practice-board').innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `SLER_${new Date().getTime()}.txt`;
+            a.click();
         };
     </script>
 </body>
