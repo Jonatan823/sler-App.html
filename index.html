@@ -6,7 +6,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #f1f5f9; font-family: 'Segoe UI', sans-serif; }
-        .sler-card { max-width: 980px; margin: 2rem auto; background: white; border-radius: 1.2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+        .sler-card { max-width: 1000px; margin: 2rem auto; background: white; border-radius: 1.2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
         
         .output-box { 
             background: #ffffff; 
@@ -14,18 +14,15 @@
             border-radius: 1rem; 
             padding: 2.5rem; 
             overflow-x: auto; 
-            min-height: 300px;
+            min-height: 350px;
             font-family: 'Consolas', 'Courier New', monospace;
             font-size: 1.15rem;
             line-height: 1.7;
             color: #1a202c;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
         }
 
         .sler-line { display: block; white-space: pre; width: max-content; }
         .input-mono { font-family: 'Consolas', 'Courier New', monospace; font-size: 1rem; }
-        
-        /* Resaltado cian oficial */
         ::selection { background: #00e5ff; color: #000; }
     </style>
 </head>
@@ -48,7 +45,7 @@
             
             <textarea id="mainInput" 
                 class="w-full h-52 p-6 border-2 border-slate-100 rounded-2xl focus:border-cyan-400 outline-none input-mono text-slate-700 shadow-inner resize-none transition-all"
-                placeholder="Cargue o escriba el texto para procesar..."></textarea>
+                placeholder="Pegue su texto aquí..."></textarea>
 
             <div class="flex gap-4">
                 <button id="btnSler" class="flex-[2] py-5 bg-blue-600 text-white rounded-2xl font-black shadow-lg hover:bg-blue-700 transition-all uppercase tracking-widest text-sm">
@@ -59,8 +56,8 @@
                 </button>
             </div>
 
-            <div id="resultArea" class="space-y-3">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Bloque Isométrico Finalizado:</p>
+            <div id="resultArea">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Bloque Isométrico Finalizado:</p>
                 <div id="editor" class="output-box"></div>
             </div>
         </div>
@@ -70,14 +67,13 @@
         const ed = document.getElementById('editor');
         const mainInput = document.getElementById('mainInput');
         const tLab = document.getElementById('tChars'), sLab = document.getElementById('sChars'), mLab = document.getElementById('mChars');
-        let backup = "", maxM = 0, esSlerActivo = false;
+        let maxM = 0, esSlerActivo = false;
 
-        // 1. Calibración dinámica según el ancho del contenedor
+        // 1. Calibración del Molde
         function cal() {
             const span = document.createElement('span');
             span.style.font = "1.15rem 'Consolas', monospace";
             span.innerText = "W"; document.body.appendChild(span);
-            // Ajuste de margen para PC
             maxM = Math.floor((ed.clientWidth - 80) / span.offsetWidth);
             mLab.innerText = maxM; 
             document.body.removeChild(span);
@@ -85,18 +81,15 @@
         window.onresize = cal;
         setTimeout(cal, 200);
 
-        // 2. Estadísticas y Selección (Global para PC)
-        function updateStats() {
-            tLab.innerText = mainInput.value.length;
-        }
-        mainInput.oninput = updateStats;
-
+        // 2. Selección Global
         document.addEventListener('selectionchange', () => {
             const sel = window.getSelection().toString().length;
             sLab.innerText = sel;
         });
 
-        // 4. Motor Semántico de tu Plugin
+        mainInput.oninput = () => tLab.innerText = mainInput.value.length;
+
+        // 3. Tratamiento de Signos
         function tratarSignos(palabra, inverso) {
             if (!inverso) return palabra;
             const inicioMatch = palabra.match(/^([¿¡]+)/);
@@ -106,11 +99,10 @@
             let sCierre = finMatch ? finMatch[1] : "";
             if (sApertura) limpia = limpia.substring(sApertura.length);
             if (sCierre) limpia = limpia.substring(0, limpia.length - sCierre.length);
-            // Invierte posición: signo de cierre al inicio, apertura al final
             return sCierre + limpia + sApertura;
         }
 
-        // 5. Render S.L.E.R. con Ley de Guionado M/C [cite: 2026-01-23]
+        // 4. Motor S.L.E.R. con corrección de huerfanas y guionado [cite: 2026-01-23]
         function renderSler() {
             let txt = mainInput.value;
             if (!txt.trim()) return;
@@ -120,30 +112,34 @@
 
             while (mazo.length > 0) {
                 let lin = "";
+                // Construcción de línea respetando el molde
                 while (mazo.length > 0 && (lin.length + mazo[0].length + 1) <= maxM) {
                     lin += (lin ? " " : "") + mazo.shift();
                 }
                 
-                // Ley de Guionado M/C (Jonatan Ribot)
+                // Lógica de Fraccionamiento (Evita letras sueltas como la "t" de Jonatan)
                 let h = maxM - lin.length;
                 if (h >= 2 && mazo.length > 0) {
-                    let p = mazo[0], c = h - 1;
+                    let p = mazo[0];
+                    let corte = h - 1;
+                    
                     if (!par) {
-                        lin += (lin ? " " : "") + p.substring(0, c) + "-"; // M: Guion final
+                        lin += (lin ? " " : "") + p.substring(0, corte) + "-";
                     } else {
-                        lin += (lin ? " " : "") + "-" + p.substring(0, c); // C: Guion de alerta
+                        lin += (lin ? " " : "") + "-" + p.substring(0, corte);
                     }
-                    mazo[0] = p.substring(c);
+                    mazo[0] = p.substring(corte);
                 }
 
                 if (par) {
-                    // Lógica del plugin: Inversión de orden de palabras y signos
+                    // Línea Espejo (C) - Inversión de palabras y signos
                     let inv = lin.split(' ').map(w => tratarSignos(w, true)).reverse().join(' ');
-                    let padding = " ".repeat(Math.max(0, maxM - inv.length));
-                    res += `<span class="sler-line">......${padding}${inv}</span>`;
+                    let pad = " ".repeat(Math.max(0, maxM - inv.length));
+                    res += `<span class="sler-line">......${pad}${inv}</span>`;
                 } else {
-                    let padding = " ".repeat(Math.max(0, maxM - lin.length));
-                    res += `<span class="sler-line">${lin}${padding}......</span>`;
+                    // Línea Madre (M)
+                    let pad = " ".repeat(Math.max(0, maxM - lin.length));
+                    res += `<span class="sler-line">${lin}${pad}......</span>`;
                 }
                 par = !par;
             }
@@ -164,14 +160,12 @@
             }
         };
 
-        // 6. Exportación Quirúrgica Ribot
         document.getElementById('btnExport').onclick = () => {
-            const contenido = ed.innerText;
-            if (!contenido) return alert("Primero ejecute el sistema S.L.E.R.");
-            const blob = new Blob(["REGISTRO IP 2025 - JONATAN RIBOT\n\n" + contenido], {type: 'text/plain'});
+            if (!ed.innerText) return alert("Ejecute SLER primero.");
+            const blob = new Blob(["REGISTRO IP 2025 - JONATAN RIBOT\n\n" + ed.innerText], {type: 'text/plain'});
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = "obra_sler.txt";
+            a.download = "obra_sler_pc.txt";
             a.click();
         };
     </script>
