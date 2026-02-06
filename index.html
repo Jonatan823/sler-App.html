@@ -7,9 +7,27 @@
     <style>
         body { background-color: #f1f5f9; font-family: 'Segoe UI', sans-serif; }
         .sler-card { max-width: 950px; margin: 2rem auto; background: white; border-radius: 1.5rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); overflow: hidden; }
-        .sler-line { font-family: 'Courier New', Courier, monospace; white-space: pre; line-height: 1.8; font-size: 1.15rem; color: #1e293b; }
+        
+        /* Control de Overflow para mantener la isometría dentro de los márgenes */
+        .sler-line { 
+            font-family: 'Courier New', Courier, monospace; 
+            white-space: pre-wrap; /* Permite saltos si el ancho excede la pantalla */
+            word-break: break-all;
+            overflow-wrap: break-word;
+            line-height: 1.8; 
+            font-size: 1.15rem; 
+            color: #1e293b; 
+        }
+        
         .input-mono { font-family: 'Courier New', Courier, monospace; font-size: 1.1rem; }
-        .output-box { background: white; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 2.5rem; margin-top: 1rem; min-height: 200px; }
+        .output-box { 
+            background: white; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 1rem; 
+            padding: 2.5rem; 
+            margin-top: 1rem; 
+            overflow-x: hidden; /* Evita el scroll horizontal */
+        }
     </style>
 </head>
 <body>
@@ -25,7 +43,7 @@
             <div class="flex justify-end"><span id="charCount" class="text-[10px] font-bold text-blue-500 uppercase">CARACTERES: 0</span></div>
             <textarea id="main-input" 
                 class="w-full h-56 p-6 border-2 border-slate-100 rounded-xl focus:border-blue-300 outline-none input-mono text-slate-700 shadow-inner resize-none"
-                placeholder="Escriba aquí..."></textarea>
+                placeholder="Escriba aquí su texto para procesar..."></textarea>
 
             <div class="flex gap-4">
                 <button id="btnSler" class="flex-[2] py-4 bg-blue-600 text-white rounded-xl font-black shadow-lg hover:bg-blue-700 transition-all uppercase tracking-wider">
@@ -37,7 +55,7 @@
             </div>
 
             <div id="slerSection" class="hidden">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">PROCESO ISOMÉTRICO:</p>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">PROCESO ISOMÉTRICO FINALIZADO:</p>
                 <div id="practice-board" class="output-box"></div>
             </div>
         </div>
@@ -45,12 +63,12 @@
 
     <div id="modal" class="fixed inset-0 bg-slate-900/70 hidden items-center justify-center p-6 z-50 backdrop-blur-md">
         <div class="bg-white p-10 rounded-[2.5rem] max-w-sm w-full shadow-2xl">
-            <h2 class="font-black text-xl text-slate-800 mb-6 text-center">Configurar Extensión</h2>
+            <h2 class="font-black text-xl text-slate-800 mb-6 text-center">Exportar a PDF / Impresión</h2>
             <input type="range" id="rangeInput" min="30" max="120" value="30" class="w-full h-2 mb-4 cursor-pointer accent-blue-600">
             <div id="rangeDisplay" class="text-center font-mono text-3xl font-black text-blue-600 mb-8">30 car.</div>
             <div class="flex gap-4">
-                <button id="btnPrint" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700">Imprimir</button>
-                <button id="btnClose" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold">Cerrar</button>
+                <button id="btnPrint" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 shadow-md">Imprimir</button>
+                <button id="btnClose" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold hover:bg-slate-200">Cerrar</button>
             </div>
         </div>
     </div>
@@ -84,7 +102,6 @@
                     lin += (lin ? " " : "") + mazo.shift();
                 }
                 
-                // Regla de guion en partición [cite: 2026-01-20]
                 let h = limite - lin.length;
                 if (mazo.length > 0 && h >= 3 && mazo[0].length >= 6) {
                     let p = mazo[0], corte = h - 1;
@@ -94,12 +111,10 @@
                 }
 
                 if (par) {
-                    // LÍNEA RECÍPROCA: Inversión de palabras y signos [cite: 2026-01-23]
                     let inv = lin.split(' ').map(w => tratarSignos(w, true)).reverse().join(' ');
                     let pad = ".".repeat(Math.max(0, limite - inv.length));
                     res += `<div class="sler-line">......${pad}${inv}</div>`;
                 } else {
-                    // LÍNEA MADRE: Normal [cite: 2026-01-23]
                     let pad = ".".repeat(Math.max(0, limite - lin.length));
                     res += `<div class="sler-line">${lin}${pad}......</div>`;
                 }
@@ -115,10 +130,10 @@
             board.innerHTML = ejecutarMotor(input.value, maxM);
             section.classList.remove('hidden');
             btnSler.innerText = "SLER ACTIVADO";
-            btnSler.classList.replace('bg-blue-600', 'bg-orange-500');
+            btnSler.style.backgroundColor = "#f97316"; // Naranja firme
         };
 
-        // LÓGICA DE IMPRESIÓN PDF (Original restaurada)
+        // VENTANA EMERGENTE PARA PDF
         const modal = document.getElementById('modal');
         const range = document.getElementById('rangeInput');
         const rangeDisplay = document.getElementById('rangeDisplay');
@@ -129,7 +144,7 @@
 
         document.getElementById('btnPrint').onclick = () => {
             const win = window.open("", "_blank");
-            win.document.write(`<html><head><title>SLER - Export</title></head><body style="font-family:'Courier New', monospace; padding:50px; white-space:pre;">${ejecutarMotor(input.value, parseInt(range.value)).replace(/<div class="sler-line">/g, '').replace(/<\/div>/g, '\n')}</body></html>`);
+            win.document.write(`<html><head><title>SLER - Exportación Isométrica</title></head><body style="font-family:'Courier New', monospace; padding:50px; white-space:pre-wrap; word-break:break-all;">${ejecutarMotor(input.value, parseInt(range.value)).replace(/<div class="sler-line">/g, '').replace(/<\/div>/g, '\n')}</body></html>`);
             win.document.close();
             win.print();
         };
