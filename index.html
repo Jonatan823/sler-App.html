@@ -7,23 +7,35 @@
     <style>
         body { background-color: #f1f5f9; font-family: 'Segoe UI', sans-serif; }
         .sler-card { max-width: 1000px; margin: 2rem auto; background: white; border-radius: 1.2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+        
         .output-box { 
-            background: #ffffff; border: 2px solid #edf2f7; border-radius: 1rem; padding: 2.5rem; 
-            overflow-y: scroll; height: 450px; font-family: 'Consolas', monospace; font-size: 1.15rem; 
-            line-height: 1.7; color: #1a202c; outline: none;
+            background: #ffffff; 
+            border: 2px solid #edf2f7; 
+            border-radius: 1rem; 
+            padding: 2.5rem; 
+            overflow-x: auto; 
+            min-height: 350px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 1.15rem;
+            line-height: 1.7;
+            color: #1a202c;
         }
-        .sler-line { display: block; white-space: pre; width: 100%; }
+
+        .sler-line { display: block; white-space: pre; width: max-content; }
+        .input-mono { font-family: 'Consolas', 'Courier New', monospace; font-size: 1rem; }
+        ::selection { background: #00e5ff; color: #000; }
     </style>
 </head>
 <body>
+
     <div class="sler-card">
-        <header class="py-6 text-center">
+        <header class="py-6 text-center border-b border-slate-100">
             <h1 class="text-4xl font-black text-blue-800 tracking-tighter">S.L.E.R.</h1>
-            <p class="text-[10px] text-blue-500 font-bold uppercase">JONATAN RIBOT - BELL VILLE - REGISTRO IP 2025</p>
+            <p class="text-[10px] text-blue-500 font-bold uppercase">Jonatan Ribot - Bell Ville - Registro IP 2025</p>
         </header>
 
         <div class="p-8 space-y-5">
-            <div class="flex justify-between items-center bg-slate-900 text-cyan-400 px-5 py-3 rounded-xl font-mono text-xs">
+            <div class="flex justify-between items-center bg-slate-900 text-cyan-400 px-5 py-3 rounded-xl font-mono text-xs shadow-xl">
                 <div>MASA: <span id="tChars" class="text-white">0</span></div>
                 <div class="bg-slate-800 px-4 py-1 rounded border border-slate-700">
                     SEL: <span id="sChars" class="text-orange-400 font-bold">0</span>
@@ -31,15 +43,6 @@
                 <div>MOLDE: <span id="mChars" class="text-white">---</span></div>
             </div>
             
-            <div id="editor" class="output-box" contenteditable="true">Pegue su texto aquí...</div>
-
-            <div class="flex gap-4">
-                <button id="btnSler" class="flex-[2] py-5 bg-blue-600 text-white rounded-2xl font-black shadow-lg uppercase text-sm">EJECUTAR S.L.E.R.</button>
-                <button id="btnExport" class="flex-1 bg-slate-800 text-white px-6 py-5 rounded-2xl font-bold uppercase text-xs">IMPRIMIR / EXPORTAR</button>
-            </div>
-        </div>
-    </div>
-    <script src="popup.js"></script>
-</body>
-</html>
-
+            <textarea id="mainInput" 
+                class="w-full h-52 p-6 border-2 border-slate-100 rounded-2xl focus:border-cyan-400 outline-none input-mono text-slate-700 shadow-inner resize-none transition-all"
+                placeholder="Pegue su texto aquí..."></textarea>
