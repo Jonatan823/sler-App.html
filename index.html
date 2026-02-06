@@ -12,17 +12,18 @@
             white-space: pre; 
             line-height: 1.8; 
             font-size: 1.15rem; 
-            color: #1e293b; 
+            color: #1e293b;
+            display: block;
         }
         .input-mono { font-family: 'Courier New', Courier, monospace; font-size: 1.1rem; }
         .output-box { 
-            background: white; 
+            background: #ffffff; 
             border: 1px solid #e2e8f0; 
             border-radius: 1rem; 
             padding: 2.5rem; 
             margin-top: 1rem;
             min-height: 200px;
-            overflow-x: hidden;
+            cursor: text;
         }
         ::selection { background: #fdba74; color: #000; }
     </style>
@@ -32,21 +33,25 @@
     <div class="sler-card">
         <header class="py-8 text-center bg-white border-b border-blue-50">
             <h1 class="text-4xl font-black text-blue-700 tracking-tighter">S.L.E.R.</h1>
-            <p class="text-[10px] text-blue-400 font-bold mt-2">Jonatan Ribot - IP 2025 Argentina</p>
+            <p class="text-[10px] text-blue-400 font-bold mt-2">Jonatan Ribot - Bell Ville - IP 2025 Argentina</p>
         </header>
 
         <div class="p-8 space-y-4">
             <div class="flex justify-between items-center px-1">
-                <span id="selectionCount" class="text-[10px] font-black text-orange-600 uppercase bg-orange-100 px-2 py-1 rounded hidden tracking-widest">SELECCIÓN: 0 CAR.</span>
-                <span id="charCount" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">TOTAL: 0 CAR.</span>
+                <div id="selDisplay" class="invisible bg-orange-100 text-orange-700 px-3 py-1 rounded text-[10px] font-black tracking-widest uppercase">
+                    Selección: <span id="selCount">0</span> car.
+                </div>
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    Total: <span id="totalChar">0</span> car.
+                </div>
             </div>
             
-            <textarea id="main-input" 
+            <textarea id="mainInput" 
                 class="w-full h-56 p-6 border-2 border-slate-100 rounded-xl focus:border-blue-300 outline-none input-mono text-slate-700 shadow-inner resize-none"
-                placeholder="Escriba aquí..."></textarea>
+                placeholder="Introduzca el texto..."></textarea>
 
             <div class="flex gap-4">
-                <button id="btnSler" class="flex-[2] py-4 bg-blue-600 text-white rounded-xl font-black shadow-lg hover:bg-blue-700 transition-all uppercase tracking-wider">
+                <button id="btnExecute" class="flex-[2] py-4 bg-blue-600 text-white rounded-xl font-black shadow-lg hover:bg-blue-700 transition-all uppercase tracking-wider">
                     EJECUTAR SLER
                 </button>
                 <button id="btnOpenModal" class="flex-1 bg-slate-800 text-white px-8 py-4 rounded-xl font-bold hover:bg-black transition-all uppercase tracking-wider">
@@ -54,116 +59,115 @@
                 </button>
             </div>
 
-            <div id="slerSection" class="hidden">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">PROCESO ISOMÉTRICO FINALIZADO:</p>
-                <div id="practice-board" class="output-box" onmouseup="detectSelection()"></div>
+            <div id="resultSection" class="hidden">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Salida Isométrica Aplanada:</p>
+                <div id="slerOutput" class="output-box"></div>
             </div>
         </div>
     </div>
 
-    <div id="modal" class="fixed inset-0 bg-slate-900/70 hidden items-center justify-center p-6 z-50 backdrop-blur-md">
+    <div id="modalPrint" class="fixed inset-0 bg-slate-900/70 hidden items-center justify-center p-6 z-50 backdrop-blur-md">
         <div class="bg-white p-10 rounded-[2.5rem] max-w-sm w-full shadow-2xl">
-            <h2 class="font-black text-xl text-slate-800 mb-6 text-center tracking-tighter">Configurar Extensión</h2>
-            <input type="range" id="rangeInput" min="30" max="120" value="30" class="w-full h-2 mb-4 cursor-pointer accent-blue-600">
-            <div id="rangeDisplay" class="text-center font-mono text-3xl font-black text-blue-600 mb-8">30 car.</div>
+            <h2 class="font-black text-xl text-slate-800 mb-6 text-center">Configurar Extensión</h2>
+            <input type="range" id="rangeW" min="30" max="120" value="30" class="w-full h-2 mb-4 cursor-pointer accent-blue-600">
+            <div id="rangeVal" class="text-center font-mono text-3xl font-black text-blue-600 mb-8">30 car.</div>
             <div class="flex gap-4">
-                <button id="btnPrint" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700">Imprimir</button>
-                <button id="btnClose" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold">Cerrar</button>
+                <button id="doPrint" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700">Imprimir</button>
+                <button id="closeModal" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold">Cerrar</button>
             </div>
         </div>
     </div>
 
     <script>
-        const input = document.getElementById('main-input');
-        const board = document.getElementById('practice-board');
-        const section = document.getElementById('slerSection');
-        const btnSler = document.getElementById('btnSler');
-        const charCount = document.getElementById('charCount');
-        const selCountLabel = document.getElementById('selectionCount');
+        const mainInput = document.getElementById('mainInput');
+        const slerOutput = document.getElementById('slerOutput');
+        const totalChar = document.getElementById('totalChar');
+        const selDisplay = document.getElementById('selDisplay');
+        const selCount = document.getElementById('selCount');
 
-        input.oninput = () => charCount.innerText = `TOTAL: ${input.value.length} CAR.`;
+        // Contador Total
+        mainInput.addEventListener('input', () => {
+            totalChar.innerText = mainInput.value.length;
+        });
 
-        function detectSelection() {
-            const selectedText = window.getSelection().toString();
-            if (selectedText.length > 0) {
-                selCountLabel.innerText = `SELECCIÓN: ${selectedText.length} CAR.`;
-                selCountLabel.classList.remove('hidden');
+        // Selector Dinámico con el Puntero
+        document.addEventListener('selectionchange', () => {
+            const selection = window.getSelection().toString();
+            if (selection.length > 0 && slerOutput.contains(window.getSelection().anchorNode)) {
+                selCount.innerText = selection.length;
+                selDisplay.classList.remove('invisible');
             } else {
-                selCountLabel.classList.add('hidden');
+                selDisplay.classList.add('invisible');
             }
-        }
+        });
 
-        function tratarSignos(p, inv) {
-            if (!inv) return p;
+        function tratarSignos(p) {
             let a = p.match(/^([¿¡]+)/), c = p.match(/([.,;!?]+)$/);
-            let l = p;
-            let sA = a ? a[1] : "", sC = c ? c[1] : "";
+            let l = p, sA = a ? a[1] : "", sC = c ? c[1] : "";
             if (sA) l = l.substring(sA.length);
             if (sC) l = l.substring(0, l.length - sC.length);
             return sC + l + sA;
         }
 
-        // Motor con partición silábica y control de bordes [cite: 2026-01-20]
-        function ejecutarMotor(texto, limite) {
-            let mazo = texto.replace(/\s+/g, ' ').trim().split(' ');
-            let lineasHTML = [];
-            let par = false;
+        // Algoritmo Madre: Aplanar -> Segmentar -> Espejar
+        function procesarSler(texto, limite) {
+            let palabras = texto.replace(/\s+/g, ' ').trim().split(' ');
+            let lineasFinales = [];
+            let esPar = false;
 
-            while (mazo.length > 0) {
+            while (palabras.length > 0) {
                 let lin = "";
-                while (mazo.length > 0 && (lin.length + mazo[0].length + (lin ? 1 : 0)) <= limite) {
-                    lin += (lin ? " " : "") + mazo.shift();
+                while (palabras.length > 0 && (lin.length + palabras[0].length + (lin ? 1 : 0)) <= limite) {
+                    lin += (lin ? " " : "") + palabras.shift();
                 }
                 
-                // Partición inteligente: solo si palabra > 6 y no deja vocales solas [cite: 2026-01-20]
+                // Partición silábica mínima 2 letras
                 let h = limite - lin.length;
-                if (mazo.length > 0 && h >= 4 && mazo[0].length >= 7) {
-                    let p = mazo[0];
+                if (palabras.length > 0 && h >= 4 && palabras[0].length >= 6) {
                     let corte = h - 1;
-                    // Evitar dejar una sola letra aislada al final
-                    const vocales = "aeiouAEIOUáéíóúÁÉÍÓÚ";
-                    if (corte === 1 || (corte === 2 && vocales.includes(p[0]))) corte++;
-                    
-                    lin += (lin ? " " : "") + p.substring(0, corte) + "-";
-                    mazo[0] = p.substring(corte);
+                    lin += (lin ? " " : "") + palabras[0].substring(0, corte) + "-";
+                    palabras[0] = palabras[0].substring(corte);
                 }
 
-                // Renderizado sin puntos de relleno en espacios, solo anclajes fijos [cite: 2026-01-23]
-                if (par) {
-                    let inv = lin.split(' ').map(w => tratarSignos(w, true)).reverse().join(' ');
-                    let pad = " ".repeat(Math.max(0, limite - inv.length));
-                    lineasHTML.push(`<div class="sler-line">......${pad}${inv}</div>`);
+                if (esPar) {
+                    // LINEA RECIPROCA: Espejo total carácter por carácter
+                    let procesada = lin.split(' ').map(w => tratarSignos(w)).join(' ');
+                    let invertida = procesada.split('').reverse().join('');
+                    let pad = " ".repeat(Math.max(0, limite - invertida.length));
+                    lineasFinales.push(`<span class="sler-line">......${pad}${invertida}</span>`);
                 } else {
+                    // LINEA MADRE: Normal
                     let pad = " ".repeat(Math.max(0, limite - lin.length));
-                    lineasHTML.push(`<div class="sler-line">${lin}${pad}......</div>`);
+                    lineasFinales.push(`<span class="sler-line">${lin}${pad}......</span>`);
                 }
-                par = !par;
+                esPar = !esPar;
             }
-            return lineasHTML.join('');
+            return lineasFinales.join('');
         }
 
-        btnSler.onclick = () => {
-            const lineasInput = input.value.split('\n');
-            const maxM = Math.max(...lineasInput.map(l => l.length), 30);
+        document.getElementById('btnExecute').onclick = () => {
+            if (!mainInput.value.trim()) return;
+            const lineas = mainInput.value.split('\n');
+            const anchoDinamico = Math.max(...lineas.map(l => l.length), 30);
             
-            // Aplanado y renderizado total [cite: 2026-02-05]
-            board.innerHTML = ejecutarMotor(input.value, maxM);
-            section.classList.remove('hidden');
-            btnSler.innerText = "SLER ACTIVADO";
-            btnSler.classList.replace('bg-blue-600', 'bg-orange-500');
+            slerOutput.innerHTML = procesarSler(mainInput.value, anchoDinamico);
+            document.getElementById('resultSection').classList.remove('hidden');
+            document.getElementById('btnExecute').innerText = "SLER ACTIVADO";
+            document.getElementById('btnExecute').style.backgroundColor = "#f97316";
         };
 
-        // Lógica de Impresión (Sin cambios)
-        const modal = document.getElementById('modal');
-        const range = document.getElementById('rangeInput');
-        const rangeDisplay = document.getElementById('rangeDisplay');
-        document.getElementById('btnOpenModal').onclick = () => modal.classList.replace('hidden', 'flex');
-        document.getElementById('btnClose').onclick = () => modal.classList.replace('flex', 'hidden');
-        range.oninput = () => rangeDisplay.innerText = `${range.value} car.`;
-        document.getElementById('btnPrint').onclick = () => {
+        // Modal e Impresión PDF
+        const modal = document.getElementById('modalPrint');
+        document.getElementById('btnOpenModal').onclick = () => modal.classList.remove('hidden');
+        document.getElementById('closeModal').onclick = () => modal.classList.add('hidden');
+        document.getElementById('rangeW').oninput = (e) => document.getElementById('rangeVal').innerText = `${e.target.value} car.`;
+        
+        document.getElementById('doPrint').onclick = () => {
             const win = window.open("", "_blank");
-            win.document.write(`<html><body style="font-family:monospace; padding:50px; white-space:pre;">${ejecutarMotor(input.value, parseInt(range.value)).replace(/<div class="sler-line">/g, '').replace(/<\/div>/g, '\n')}</body></html>`);
-            win.document.close(); win.print();
+            const content = procesarSler(mainInput.value, parseInt(document.getElementById('rangeW').value));
+            win.document.write(`<html><body style="font-family:monospace; padding:40px; white-space:pre;">${content.replace(/<span class="sler-line">/g, '').replace(/<\/span>/g, '\n')}</body></html>`);
+            win.document.close();
+            win.print();
         };
     </script>
 </body>
