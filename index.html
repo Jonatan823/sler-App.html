@@ -4,77 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S.L.E.R. - App Oficial - Jonatan Ribot</title>
-    
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-
     <style>
         body { background-color: #f3f4f6; font-family: sans-serif; }
-        .sler-output-area {
+        .sler-output {
             font-family: 'Courier New', Courier, monospace;
             white-space: pre;
             line-height: 1.6;
             background: #ffffff;
             color: #1f2937;
             font-weight: 400; 
+            font-size: 1.125rem;
         }
         .bloque-sler { border-left: 4px solid #3b82f6; padding-left: 1.5rem; }
     </style>
 </head>
 <body>
-    <div id="root">
-        <div style="display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif; color:#666;">
-            Cargando Algoritmo Madre S.L.E.R...
-        </div>
-    </div>
 
-    <script type="text/babel">
-        const { useState } = React;
+    <div class="max-w-3xl mx-auto my-10 p-6 bg-white shadow-2xl rounded-xl border-b-8 border-blue-600">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-black text-blue-800 tracking-tighter">S.L.E.R.</h1>
+            <p class="text-sm font-semibold text-gray-600 uppercase">Sistema de Lectura y Escritura Recíproco</p>
+            <p class="text-xs text-blue-500 mt-1">Jonatan Ribot - Bell Ville - IP 2025 Argentina</p>
+        </header>
 
-        function MobileSLERApp() {
-            const [text, setText] = useState('');
-            const [isSlerActive, setIsSlerActive] = useState(false);
-            const [showPrintModal, setShowPrintModal] = useState(false);
-            const [printWidth, setPrintWidth] = useState(30);
-            const ANCHO_MOLDE = 30;
-
-            const motorSLER = (input, ancho) => {
-                if (!input) return "";
-                let palabras = input.trim().split(/\s+/);
-                let lineas = [];
-                let lineaActual = "";
-
-                for (let i = 0; i < palabras.length; i++) {
-                    let p = palabras[i];
-                    let espacioDisp = ancho - lineaActual.length - (lineaActual ? 1 : 0);
-
-                    if (p.length <= espacioDisp) {
-                        lineaActual += (lineaActual ? " " : "") + p;
-                    } else if (p.length > 6 && espacioDisp >= 3) {
-                        let corte = espacioDisp - 1; 
-                        if (corte < 2) corte = 2;
-                        if (p.length - corte < 2) corte = p.length - 2;
-                        let parte1 = p.substring(0, corte) + "-";
-                        let parte2 = p.substring(corte);
-                        lineaActual += (lineaActual ? " " : "") + parte1;
-                        lineas.push(lineaActual.padEnd(ancho, '.'));
-                        lineaActual = parte2;
-                    } else {
-                        lineas.push(lineaActual.padEnd(ancho, '.'));
-                        lineaActual = p;
-                    }
-                }
-                if (lineaActual) lineas.push(lineaActual.padEnd(ancho, '.'));
-
-                return lineas.map((lin, idx) => {
-                    if (idx % 2 !== 0) return "......" + lin.split('').reverse().join('');
-                    return lin + "......";
-                }).join('\n');
-            };
-
-            const handleKeyDown = (e) => {
-                if (e.key === "Enter") {
-                    if (text.length % ANCHO_MOLDE !== 0) {
-                        e.preventDefault();
+        <div class="space-y-4">
+            <textarea id="inputText"
+                class="w-full h-
