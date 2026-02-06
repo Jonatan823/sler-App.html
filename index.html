@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <title>S.L.E.R. - App Oficial - Jonatan Ribot</title>
-    <meta name="description" content="Software oficial S.L.E.R. Método de lectura veloz con isometría. Registrado por Jonatan Ribot en 2025.">
-    <meta name="author" content="Ribot Jonatan">
-
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -21,17 +18,17 @@
             line-height: 1.6;
             background: #ffffff;
             color: #1f2937;
-            /* Peso normal para coincidir con el Test y el Chat */
             font-weight: 400; 
         }
-        .bloque-sler {
-            border-left: 4px solid #3b82f6;
-            padding-left: 1.5rem;
-        }
+        .bloque-sler { border-left: 4px solid #3b82f6; padding-left: 1.5rem; }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div id="root">
+        <div style="display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif; color:#666;">
+            Cargando Algoritmo Madre S.L.E.R...
+        </div>
+    </div>
 
     <script type="text/babel">
         const { useState } = React;
@@ -41,9 +38,8 @@
             const [isSlerActive, setIsSlerActive] = useState(false);
             const [showPrintModal, setShowPrintModal] = useState(false);
             const [printWidth, setPrintWidth] = useState(30);
-            const ANCHO_MOLDE = 30; // Isometría estricta IP 2025
+            const ANCHO_MOLDE = 30;
 
-            // --- ALGORITMO MADRE: SEGMENTACIÓN, GUIONADO Y ZIG-ZAG ---
             const motorSLER = (input, ancho) => {
                 if (!input) return "";
                 let palabras = input.trim().split(/\s+/);
@@ -57,14 +53,11 @@
                     if (p.length <= espacioDisp) {
                         lineaActual += (lineaActual ? " " : "") + p;
                     } else if (p.length > 6 && espacioDisp >= 3) {
-                        // REGLA DE GUIONES: Mínimo 2 letras por sílaba (no letras solas)
                         let corte = espacioDisp - 1; 
                         if (corte < 2) corte = 2;
                         if (p.length - corte < 2) corte = p.length - 2;
-
                         let parte1 = p.substring(0, corte) + "-";
                         let parte2 = p.substring(corte);
-                        
                         lineaActual += (lineaActual ? " " : "") + parte1;
                         lineas.push(lineaActual.padEnd(ancho, '.'));
                         lineaActual = parte2;
@@ -75,23 +68,13 @@
                 }
                 if (lineaActual) lineas.push(lineaActual.padEnd(ancho, '.'));
 
-                // TRANSFORMACIÓN RECÍPROCA (ZIG-ZAG)
                 return lineas.map((lin, idx) => {
-                    const esPar = idx % 2 !== 0;
-                    if (esPar) {
-                        // Línea Recíproca: Inversión y anclaje inicial
-                        const invertida = lin.split('').reverse().join('');
-                        return "......" + invertida; 
-                    } else {
-                        // Línea Madre: Flujo normal y anclaje final
-                        return lin + "......";
-                    }
+                    if (idx % 2 !== 0) return "......" + lin.split('').reverse().join('');
+                    return lin + "......";
                 }).join('\n');
             };
 
             const handleKeyDown = (e) => {
-                // Bloqueo de Enter: Obliga a completar la isometría de 30
                 if (e.key === "Enter") {
                     if (text.length % ANCHO_MOLDE !== 0) {
                         e.preventDefault();
-                        alert("
