@@ -9,6 +9,7 @@
         body { background-color: #f1f5f9; font-family: 'Segoe UI', sans-serif; }
         .sler-card { max-width: 1000px; margin: 2rem auto; background: white; border-radius: 1.2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
         
+        /* Simetría de Contenedores y Altura h-52 */
         #mainInput, .output-box {
             overflow-y: scroll !important;
             overflow-x: hidden !important;
@@ -24,8 +25,9 @@
         }
 
         .sler-line { display: block; white-space: pre; width: 100%; }
+        ::selection { background: #00e5ff; color: #000; }
         
-        /* Relieve de Scroll */
+        /* Relieve de Scroll para evitar pérdida de caracteres */
         ::-webkit-scrollbar { width: 14px; }
         ::-webkit-scrollbar-track { background: #f8fafc; border-left: 1px solid #e2e8f0; border-radius: 0 1rem 1rem 0; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border: 3px solid #f8fafc; border-radius: 10px; }
@@ -47,7 +49,7 @@
             <div class="flex justify-between items-center bg-slate-900 text-cyan-400 px-5 py-3 rounded-xl font-mono text-xs shadow-xl">
                 <div>MASA: <span id="tChars" class="text-white">0</span></div>
                 <div class="bg-slate-800 px-4 py-1 rounded border border-slate-700">SEL: <span id="sChars" class="text-orange-400 font-bold">0</span></div>
-                <div>MOLDE: <span id="mChars" class="text-white">---</span></div>
+                <div>MOLDE PANTALLA: <span id="mChars" class="text-white">---</span></div>
             </div>
             
             <textarea id="mainInput" class="w-full p-6 border-2 border-slate-100 rounded-2xl focus:border-cyan-400 outline-none font-mono text-slate-700 shadow-inner resize-none transition-all" placeholder="Pegue su texto aquí..."></textarea>
@@ -66,24 +68,24 @@
 
     <div id="exportModal">
         <div class="modal-content space-y-6">
-            <h2 class="text-xl font-black text-slate-800 border-b pb-2">CONFIGURACIÓN DE SALIDA</h2>
+            <h2 class="text-xl font-black text-slate-800 border-b pb-2 tracking-tighter">CONFIGURACIÓN DE SALIDA</h2>
             
             <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Ancho del Molde (Max 120):</label>
-                <input type="number" id="exportM" value="80" max="120" min="20" class="w-full p-3 bg-slate-100 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none font-mono font-bold">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Molde de caracteres (Máx 120):</label>
+                <input type="number" id="exportM" value="80" max="120" min="20" class="w-full p-3 bg-slate-100 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none font-mono font-bold text-blue-600 text-center text-xl">
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Formato de Archivo:</label>
-                <select id="exportF" class="w-full p-3 bg-slate-100 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none font-bold">
-                    <option value="txt">TEXTO EDITABLE (.txt)</option>
-                    <option value="pdf">DOCUMENTO PDF (.pdf)</option>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Formato de Archivo:</label>
+                <select id="exportF" class="w-full p-3 bg-slate-100 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none font-bold uppercase text-xs">
+                    <option value="txt">Texto Editable (.txt)</option>
+                    <option value="pdf">Documento PDF (.pdf)</option>
                 </select>
             </div>
 
-            <div class="flex gap-3 pt-4">
-                <button id="btnCancel" class="flex-1 py-3 font-bold text-slate-400 hover:text-slate-600 uppercase text-xs">Cancelar</button>
-                <button id="btnConfirmExport" class="flex-[2] py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg hover:bg-blue-700 uppercase text-xs tracking-widest">Generar Archivo</button>
+            <div class="flex gap-3 pt-4 border-t border-slate-100">
+                <button id="btnCancel" class="flex-1 py-3 font-bold text-slate-400 hover:text-slate-600 uppercase text-[10px]">Cerrar</button>
+                <button id="btnConfirmExport" class="flex-[2] py-3 bg-blue-600 text-white rounded-xl font-black shadow-lg hover:bg-blue-700 uppercase text-[10px] tracking-widest transition-all">Generar Documento</button>
             </div>
         </div>
     </div>
@@ -106,7 +108,15 @@
         window.onresize = cal;
         setTimeout(cal, 200);
 
-        // Lógica de Renderizado (Sin cambios estructurales)
+        function tratarSignos(p, inv) {
+            if (!inv) return p;
+            const ini = p.match(/^([¿¡(]+)/), fin = p.match(/([.,;!?)]+)$/);
+            let limpia = p, sA = ini ? ini[1] : "", sC = fin ? fin[1] : "";
+            if (sA) limpia = limpia.substring(sA.length);
+            if (sC) limpia = limpia.substring(0, limpia.length - sC.length);
+            return sC + limpia + sA;
+        }
+
         function renderSler(moldeCustom = null) {
             let m = moldeCustom || maxM;
             let txt = mainInput.value.trim().replace(/\s+/g, ' ');
@@ -117,9 +127,9 @@
                 let lin = "";
                 while (mazo.length > 0 && (lin.length + mazo[0].length + 1) <= m) lin += (lin ? " " : "") + mazo.shift();
                 
-                let sobrante = m - lin.length;
-                if (sobrante >= 3 && mazo.length > 0) {
-                    let p = mazo[0], corte = sobrante - 1;
+                let h = m - lin.length;
+                if (h >= 3 && mazo.length > 0) {
+                    let p = mazo[0], corte = h - 1;
                     if (corte >= 2 && (p.length - corte) >= 2) {
                         if (!par) lin += (lin ? " " : "") + p.substring(0, corte) + "-";
                         else lin += (lin ? " " : "") + "-" + p.substring(0, corte);
@@ -129,13 +139,7 @@
 
                 let pad = " ".repeat(Math.max(0, m - lin.length));
                 if (par) {
-                    let inv = lin.split(' ').map(w => {
-                        const ini = w.match(/^([¿¡(]+)/), fin = w.match(/([.,;!?)]+)$/);
-                        let limpia = w, sA = ini ? ini[1] : "", sC = fin ? fin[1] : "";
-                        if (sA) limpia = limpia.substring(sA.length);
-                        if (sC) limpia = limpia.substring(0, limpia.length - sC.length);
-                        return sC + limpia + sA;
-                    }).reverse().join(' ');
+                    let inv = lin.split(' ').map(w => tratarSignos(w, true)).reverse().join(' ');
                     let padInv = " ".repeat(Math.max(0, m - inv.length));
                     res += (moldeCustom ? "" : `<span class="sler-line">`) + `......${padInv}${inv}` + (moldeCustom ? "\n" : `</span>`);
                 } else {
@@ -146,7 +150,6 @@
             return res;
         }
 
-        // Eventos de botones
         document.getElementById('btnSler').onclick = () => {
             if (!esSlerActivo) {
                 ed.innerHTML = renderSler();
@@ -161,31 +164,49 @@
             }
         };
 
-        // Modal de exportación
         document.getElementById('btnOpenExport').onclick = () => modal.style.display = 'flex';
         document.getElementById('btnCancel').onclick = () => modal.style.display = 'none';
 
         document.getElementById('btnConfirmExport').onclick = () => {
-            const m = parseInt(document.getElementById('exportM').value);
+            const m = Math.min(parseInt(document.getElementById('exportM').value), 120);
             const format = document.getElementById('exportF').value;
-            const content = renderSler(m); // Renderizamos con el molde custom
+            const content = renderSler(m);
 
             if (format === 'txt') {
                 const blob = new Blob(["REGISTRO IP 2025 - JONATAN RIBOT\n\n" + content], {type: 'text/plain'});
                 const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
                 a.download = `sler_molde_${m}.txt`; a.click();
             } else {
-                const doc = new jsPDF();
-                doc.setFont("courier", "normal");
+                // PDF Blindado: Orientación Horizontal si es molde ancho
+                const doc = new jsPDF({
+                    orientation: m > 90 ? "l" : "p",
+                    unit: "mm",
+                    format: "a4"
+                });
+
+                doc.setFont("courier", "bold");
                 doc.setFontSize(10);
-                const splitText = doc.splitTextToSize(content, 180);
-                doc.text(splitText, 10, 10);
-                doc.save(`sler_molde_${m}.pdf`);
+                
+                const lineas = content.split('\n');
+                let y = 20;
+                doc.text("REGISTRO IP 2025 - JONATAN RIBOT - SISTEMA S.L.E.R.", 15, 12);
+                
+                lineas.forEach(linea => {
+                    if (y > (doc.internal.pageSize.getHeight() - 15)) { 
+                        doc.addPage(); 
+                        y = 20; 
+                    }
+                    doc.text(linea, 15, y);
+                    y += 5.5; 
+                });
+
+                doc.save(`sler_isometria_${m}.pdf`);
             }
             modal.style.display = 'none';
         };
 
         mainInput.oninput = () => tLab.innerText = mainInput.value.length;
+        document.addEventListener('selectionchange', () => { sLab.innerText = window.getSelection().toString().length; });
     </script>
 </body>
 </html>
