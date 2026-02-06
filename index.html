@@ -8,24 +8,16 @@
         body { background-color: #f1f5f9; font-family: 'Segoe UI', sans-serif; }
         .sler-card { max-width: 1000px; margin: 2rem auto; background: white; border-radius: 1.2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
         
+        /* Estética de la caja de salida - Captura 1319 */
         .output-box { 
-            background: #ffffff; 
-            border: 2px solid #edf2f7; 
-            border-radius: 1rem; 
-            padding: 2.5rem; 
-            overflow-y: auto; 
-            overflow-x: hidden; 
-            min-height: 350px;
-            font-family: 'Consolas', 'Courier New', monospace;
-            font-size: 1.15rem;
-            line-height: 1.7;
-            color: #1a202c;
+            background: #ffffff; border: 2px solid #edf2f7; border-radius: 1rem; 
+            padding: 2.5rem; overflow-y: auto; overflow-x: hidden; /* Sin barra horizontal */
+            min-height: 350px; font-family: 'Consolas', monospace; font-size: 1.15rem; 
+            line-height: 1.7; color: #1a202c; outline: none;
         }
 
         .sler-line { display: block; white-space: pre; width: 100%; }
-        .input-mono { font-family: 'Consolas', 'Courier New', monospace; font-size: 1rem; }
         ::selection { background: #00e5ff; color: #000; }
-        
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
@@ -35,7 +27,7 @@
     <div class="sler-card">
         <header class="py-6 text-center border-b border-slate-100">
             <h1 class="text-4xl font-black text-blue-800 tracking-tighter">S.L.E.R.</h1>
-            <p class="text-[10px] text-blue-500 font-bold uppercase">Jonatan Ribot - Bell Ville - Registro IP 2025</p>
+            <p class="text-[10px] text-blue-500 font-bold uppercase tracking-widest">Jonatan Ribot - Bell Ville - Registro IP 2025</p>
         </header>
 
         <div class="p-8 space-y-5">
@@ -48,8 +40,118 @@
             </div>
             
             <textarea id="mainInput" 
-                class="w-full h-52 p-6 border-2 border-slate-100 rounded-2xl focus:border-cyan-400 outline-none input-mono text-slate-700 shadow-inner resize-none transition-all"
+                class="w-full h-52 p-6 border-2 border-slate-100 rounded-2xl focus:border-cyan-400 outline-none font-mono text-slate-700 shadow-inner resize-none transition-all"
                 placeholder="Pegue su texto aquí..."></textarea>
 
             <div class="flex gap-4">
-                <button id="btnSler" class="flex-[2] py-5 bg-blue-600 text-white rounded-2xl font-black shadow
+                <button id="btnSler" class="flex-[2] py-5 bg-blue-600 text-white rounded-2xl font-black shadow-lg hover:bg-blue-700 transition-all uppercase tracking-widest text-sm">
+                    EJECUTAR S.L.E.R.
+                </button>
+                <button id="btnExport" class="flex-1 bg-slate-800 text-white px-6 py-5 rounded-2xl font-bold hover:bg-black transition-all uppercase text-xs">
+                    IMPRIMIR / EXPORTAR
+                </button>
+            </div>
+
+            <div id="resultArea">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">BLOQUE ISOMÉTRICO FINALIZADO:</p>
+                <div id="editor" class="output-box"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ed = document.getElementById('editor');
+        const mainInput = document.getElementById('mainInput');
+        const tLab = document.getElementById('tChars'), sLab = document.getElementById('sChars'), mLab = document.getElementById('mChars');
+        let maxM = 0, esSlerActivo = false;
+
+        // Calibración del Molde (Captura 1319 muestra Molde: 83)
+        function cal() {
+            const span = document.createElement('span');
+            span.style.font = "1.15rem 'Consolas', monospace";
+            span.innerText = "W"; document.body.appendChild(span);
+            maxM = Math.floor((ed.clientWidth - 100) / span.offsetWidth);
+            mLab.innerText = maxM; 
+            document.body.removeChild(span);
+        }
+        window.onresize = cal;
+        setTimeout(cal, 200);
+
+        // Contador de MASA (en tiempo real)
+        mainInput.oninput = () => tLab.innerText = mainInput.value.length;
+
+        // Contador SEL (Selección de caracteres) - Solución definitiva
+        document.addEventListener('selectionchange', () => {
+            const sel = window.getSelection().toString().length;
+            sLab.innerText = sel;
+        });
+
+        function tratarSignos(p, inv) {
+            if (!inv) return p;
+            const ini = p.match(/^([¿¡(]+)/), fin = p.match(/([.,;!?)]+)$/);
+            let limpia = p, sA = ini ? ini[1] : "", sC = fin ? fin[1] : "";
+            if (sA) limpia = limpia.substring(sA.length);
+            if (sC) limpia = limpia.substring(0, limpia.length - sC.length);
+            return sC + limpia + sA;
+        }
+
+        // MOTOR S.L.E.R. - Lógica Ribot 2025
+        function renderSler() {
+            let txt = mainInput.value;
+            if (!txt.trim()) return;
+            let mazo = txt.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim().split(' ');
+            let res = "", par = false;
+
+            while (mazo.length > 0) {
+                let lin = "";
+                while (mazo.length > 0 && (lin.length + mazo[0].length + 1) <= maxM) {
+                    lin += (lin ? " " : "") + mazo.shift();
+                }
+                
+                // Guionado de integridad [cite: 2026-01-20]
+                let h = maxM - lin.length;
+                if (h >= 2 && mazo.length > 0) {
+                    let p = mazo[0], corte = h - 1;
+                    if (corte >= 1) {
+                        if (!par) lin += (lin ? " " : "") + p.substring(0, corte) + "-";
+                        else lin += (lin ? " " : "") + "-" + p.substring(0, corte);
+                        mazo[0] = p.substring(corte);
+                    }
+                }
+
+                if (par) {
+                    let inv = lin.split(' ').map(w => tratarSignos(w, true)).reverse().join(' ');
+                    res += `<span class="sler-line">......${" ".repeat(Math.max(0, maxM - inv.length))}${inv}</span>`;
+                } else {
+                    res += `<span class="sler-line">${lin}${" ".repeat(Math.max(0, maxM - lin.length))}......</span>`;
+                }
+                par = !par;
+            }
+            ed.innerHTML = res;
+        }
+
+        // Control de botones
+        document.getElementById('btnSler').onclick = () => {
+            if (!esSlerActivo) {
+                renderSler();
+                document.getElementById('btnSler').innerText = "RESTABLECER MASA";
+                document.getElementById('btnSler').style.backgroundColor = "#ea580c"; // Naranja de captura 1319
+                esSlerActivo = true;
+            } else {
+                ed.innerHTML = "";
+                document.getElementById('btnSler').innerText = "EJECUTAR S.L.E.R.";
+                document.getElementById('btnSler').style.backgroundColor = "#2563eb"; // Azul original
+                esSlerActivo = false;
+            }
+        };
+
+        document.getElementById('btnExport').onclick = () => {
+            if (!ed.innerText) return alert("Primero ejecute el sistema.");
+            const blob = new Blob(["REGISTRO IP 2025 - JONATAN RIBOT\n\n" + ed.innerText], {type: 'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = "obra_sler.txt"; a.click();
+        };
+    </script>
+</body>
+</html>
