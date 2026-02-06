@@ -7,15 +7,12 @@
     <style>
         body { background-color: #f1f5f9; font-family: 'Segoe UI', sans-serif; }
         .sler-card { max-width: 1000px; margin: 2rem auto; background: white; border-radius: 1.2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
-        
-        /* Estética de la caja de salida - Captura 1319 */
         .output-box { 
             background: #ffffff; border: 2px solid #edf2f7; border-radius: 1rem; 
-            padding: 2.5rem; overflow-y: auto; overflow-x: hidden; /* Sin barra horizontal */
+            padding: 2.5rem; overflow-y: auto; overflow-x: hidden; 
             min-height: 350px; font-family: 'Consolas', monospace; font-size: 1.15rem; 
             line-height: 1.7; color: #1a202c; outline: none;
         }
-
         .sler-line { display: block; white-space: pre; width: 100%; }
         ::selection { background: #00e5ff; color: #000; }
         ::-webkit-scrollbar { width: 8px; }
@@ -65,7 +62,6 @@
         const tLab = document.getElementById('tChars'), sLab = document.getElementById('sChars'), mLab = document.getElementById('mChars');
         let maxM = 0, esSlerActivo = false;
 
-        // Calibración del Molde (Captura 1319 muestra Molde: 83)
         function cal() {
             const span = document.createElement('span');
             span.style.font = "1.15rem 'Consolas', monospace";
@@ -77,10 +73,22 @@
         window.onresize = cal;
         setTimeout(cal, 200);
 
-        // Contador de MASA (en tiempo real)
+        // BLINDAJE DE PEGADO: Captura el evento y fuerza texto plano
+        mainInput.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const text = (e.originalEvent || e).clipboardData.getData('text/plain');
+            // Normalización de caracteres DOC/ODT comunes que rompen la estética
+            const cleanText = text
+                .replace(/[\u201C\u201D]/g, '"') // Comillas curvas a planas
+                .replace(/[\u2018\u2019]/g, "'") // Apóstrofes curvos
+                .replace(/\u2014/g, "--")       // Guion largo a doble guion
+                .replace(/\r\n/g, "\n");        // Normaliza saltos de línea Windows
+            
+            document.execCommand("insertText", false, cleanText);
+        });
+
         mainInput.oninput = () => tLab.innerText = mainInput.value.length;
 
-        // Contador SEL (Selección de caracteres) - Solución definitiva
         document.addEventListener('selectionchange', () => {
             const sel = window.getSelection().toString().length;
             sLab.innerText = sel;
@@ -95,11 +103,11 @@
             return sC + limpia + sA;
         }
 
-        // MOTOR S.L.E.R. - Lógica Ribot 2025
         function renderSler() {
             let txt = mainInput.value;
             if (!txt.trim()) return;
-            let mazo = txt.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim().split(' ');
+            // Limpieza profunda de espacios y saltos antes de procesar
+            let mazo = txt.replace(/\s+/g, ' ').trim().split(' ');
             let res = "", par = false;
 
             while (mazo.length > 0) {
@@ -108,7 +116,6 @@
                     lin += (lin ? " " : "") + mazo.shift();
                 }
                 
-                // Guionado de integridad [cite: 2026-01-20]
                 let h = maxM - lin.length;
                 if (h >= 2 && mazo.length > 0) {
                     let p = mazo[0], corte = h - 1;
@@ -130,23 +137,22 @@
             ed.innerHTML = res;
         }
 
-        // Control de botones
         document.getElementById('btnSler').onclick = () => {
             if (!esSlerActivo) {
                 renderSler();
                 document.getElementById('btnSler').innerText = "RESTABLECER MASA";
-                document.getElementById('btnSler').style.backgroundColor = "#ea580c"; // Naranja de captura 1319
+                document.getElementById('btnSler').classList.replace('bg-blue-600', 'bg-orange-600');
                 esSlerActivo = true;
             } else {
                 ed.innerHTML = "";
                 document.getElementById('btnSler').innerText = "EJECUTAR S.L.E.R.";
-                document.getElementById('btnSler').style.backgroundColor = "#2563eb"; // Azul original
+                document.getElementById('btnSler').classList.replace('bg-orange-600', 'bg-blue-600');
                 esSlerActivo = false;
             }
         };
 
         document.getElementById('btnExport').onclick = () => {
-            if (!ed.innerText) return alert("Primero ejecute el sistema.");
+            if (!ed.innerText) return alert("Ejecute S.L.E.R. primero.");
             const blob = new Blob(["REGISTRO IP 2025 - JONATAN RIBOT\n\n" + ed.innerText], {type: 'text/plain'});
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
