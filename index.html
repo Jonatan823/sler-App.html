@@ -7,15 +7,19 @@
     <style>
         body { background-color: #f1f5f9; font-family: 'Segoe UI', sans-serif; }
         .sler-card { max-width: 1000px; margin: 2rem auto; background: white; border-radius: 1.2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+        
         .output-box { 
             background: #ffffff; border: 2px solid #edf2f7; border-radius: 1rem; 
-            padding: 2.5rem; overflow-y: auto; overflow-x: hidden; 
+            padding: 1.5rem 2.5rem; /* Ajuste de padding para simular el textarea */
+            overflow-y: scroll; /* Forzamos barra lateral para igualar anchos */
+            overflow-x: hidden; 
             min-height: 350px; font-family: 'Consolas', monospace; font-size: 1.15rem; 
             line-height: 1.7; color: #1a202c; outline: none;
         }
+
         .sler-line { display: block; white-space: pre; width: 100%; }
         ::selection { background: #00e5ff; color: #000; }
-        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar { width: 10px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
@@ -66,32 +70,25 @@
             const span = document.createElement('span');
             span.style.font = "1.15rem 'Consolas', monospace";
             span.innerText = "W"; document.body.appendChild(span);
-            maxM = Math.floor((ed.clientWidth - 100) / span.offsetWidth);
+            // Calibración exacta restando el ancho de la barra de scroll forzada
+            maxM = Math.floor((ed.clientWidth - 95) / span.offsetWidth);
             mLab.innerText = maxM; 
             document.body.removeChild(span);
         }
         window.onresize = cal;
         setTimeout(cal, 200);
 
-        // BLINDAJE DE PEGADO: Captura el evento y fuerza texto plano
         mainInput.addEventListener('paste', (e) => {
             e.preventDefault();
             const text = (e.originalEvent || e).clipboardData.getData('text/plain');
-            // Normalización de caracteres DOC/ODT comunes que rompen la estética
-            const cleanText = text
-                .replace(/[\u201C\u201D]/g, '"') // Comillas curvas a planas
-                .replace(/[\u2018\u2019]/g, "'") // Apóstrofes curvos
-                .replace(/\u2014/g, "--")       // Guion largo a doble guion
-                .replace(/\r\n/g, "\n");        // Normaliza saltos de línea Windows
-            
-            document.execCommand("insertText", false, cleanText);
+            const aplanado = text.replace(/[\u201C\u201D]/g, '"').replace(/[\u2018\u2019]/g, "'").replace(/\u2014/g, "--").replace(/\r\n/g, "\n").replace(/\t/g, " ");
+            document.execCommand("insertText", false, aplanado);
         });
 
         mainInput.oninput = () => tLab.innerText = mainInput.value.length;
 
         document.addEventListener('selectionchange', () => {
-            const sel = window.getSelection().toString().length;
-            sLab.innerText = sel;
+            sLab.innerText = window.getSelection().toString().length;
         });
 
         function tratarSignos(p, inv) {
@@ -106,7 +103,6 @@
         function renderSler() {
             let txt = mainInput.value;
             if (!txt.trim()) return;
-            // Limpieza profunda de espacios y saltos antes de procesar
             let mazo = txt.replace(/\s+/g, ' ').trim().split(' ');
             let res = "", par = false;
 
@@ -117,20 +113,23 @@
                 }
                 
                 let h = maxM - lin.length;
-                if (h >= 2 && mazo.length > 0) {
+                if (h >= 3 && mazo.length > 0) { // Mínimo 3 espacios para guionar con sentido
                     let p = mazo[0], corte = h - 1;
-                    if (corte >= 1) {
+                    // REGLA: No dejar letras huérfanas (mínimo 2 caracteres antes/después del guion)
+                    if (corte >= 2 && (p.length - corte) >= 2) {
                         if (!par) lin += (lin ? " " : "") + p.substring(0, corte) + "-";
                         else lin += (lin ? " " : "") + "-" + p.substring(0, corte);
                         mazo[0] = p.substring(corte);
                     }
                 }
 
+                let pad = " ".repeat(Math.max(0, maxM - lin.length));
                 if (par) {
                     let inv = lin.split(' ').map(w => tratarSignos(w, true)).reverse().join(' ');
-                    res += `<span class="sler-line">......${" ".repeat(Math.max(0, maxM - inv.length))}${inv}</span>`;
+                    let padInv = " ".repeat(Math.max(0, maxM - inv.length));
+                    res += `<span class="sler-line">......${padInv}${inv}</span>`;
                 } else {
-                    res += `<span class="sler-line">${lin}${" ".repeat(Math.max(0, maxM - lin.length))}......</span>`;
+                    res += `<span class="sler-line">${lin}${pad}......</span>`;
                 }
                 par = !par;
             }
@@ -141,12 +140,12 @@
             if (!esSlerActivo) {
                 renderSler();
                 document.getElementById('btnSler').innerText = "RESTABLECER MASA";
-                document.getElementById('btnSler').classList.replace('bg-blue-600', 'bg-orange-600');
+                document.getElementById('btnSler').style.backgroundColor = "#ea580c";
                 esSlerActivo = true;
             } else {
                 ed.innerHTML = "";
                 document.getElementById('btnSler').innerText = "EJECUTAR S.L.E.R.";
-                document.getElementById('btnSler').classList.replace('bg-orange-600', 'bg-blue-600');
+                document.getElementById('btnSler').style.backgroundColor = "#2563eb";
                 esSlerActivo = false;
             }
         };
@@ -154,8 +153,7 @@
         document.getElementById('btnExport').onclick = () => {
             if (!ed.innerText) return alert("Ejecute S.L.E.R. primero.");
             const blob = new Blob(["REGISTRO IP 2025 - JONATAN RIBOT\n\n" + ed.innerText], {type: 'text/plain'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
             a.download = "obra_sler.txt"; a.click();
         };
     </script>
