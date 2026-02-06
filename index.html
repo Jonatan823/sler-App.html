@@ -14,7 +14,7 @@
             border-radius: 1rem; 
             padding: 2.5rem; 
             overflow-y: auto; 
-            overflow-x: hidden; /* BARRA DE ABAJO ELIMINADA */
+            overflow-x: hidden; 
             min-height: 350px;
             font-family: 'Consolas', 'Courier New', monospace;
             font-size: 1.15rem;
@@ -26,7 +26,6 @@
         .input-mono { font-family: 'Consolas', 'Courier New', monospace; font-size: 1rem; }
         ::selection { background: #00e5ff; color: #000; }
         
-        /* Estética del Scroll Vertical */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
@@ -53,22 +52,4 @@
                 placeholder="Pegue su texto aquí..."></textarea>
 
             <div class="flex gap-4">
-                <button id="btnSler" class="flex-[2] py-5 bg-blue-600 text-white rounded-2xl font-black shadow-lg hover:bg-blue-700 transition-all uppercase tracking-widest text-sm">
-                    EJECUTAR S.L.E.R.
-                </button>
-                <button id="btnExport" class="flex-1 bg-slate-800 text-white px-6 py-5 rounded-2xl font-bold hover:bg-black transition-all uppercase text-xs">
-                    EXPORTAR .TXT
-                </button>
-            </div>
-
-            <div id="resultArea">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Bloque Isométrico Finalizado:</p>
-                <div id="editor" class="output-box"></div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const ed = document.getElementById('editor');
-        const mainInput = document.getElementById('mainInput');
-        const tLab = document.getElementById('tChars'), sLab = document.getElementById('s
+                <button id="btnSler" class="flex-[2] py-5 bg-blue-600 text-white rounded-2xl font-black shadow
