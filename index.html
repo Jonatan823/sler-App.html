@@ -3,18 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>S.L.E.R. - Sistema de Lectura y Escritura Recíproco - Jonatan Ribot</title>
-    <meta name="description" content="Software oficial S.L.E.R. (Sistema de Lectura y Escritura Recíproco). Método de lectura veloz con isometría de 30 caracteres. Registrado por Jonatan Ribot en 2025.">
-    <meta name="keywords" content="SLER, Jonatan Ribot, Bell Ville, lectura veloz, método de lectura, isometría, escritura recíproca, algoritmo madre, neuro-lectura, Argentina 2025">
-    <meta name="author" content="Ribot Jonatan">
-    <meta name="geo.placename" content="Bell Ville, Córdoba, Argentina">
-
+    <title>S.L.E.R. - App Oficial - Jonatan Ribot</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-
     <style>
         body { background-color: #f3f4f6; font-family: sans-serif; }
         .sler-output {
@@ -25,124 +18,126 @@
             color: #1f2937;
             font-weight: bold;
         }
-        /* Estilo para simular el bloque sólido de tu Captura (1062) */
-        .bloque-isometria {
-            border-left: 4px solid #3b82f6;
-            padding-left: 1rem;
-            letter-spacing: 0.05em;
-        }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState } = React;
 
         function MobileSLERApp() {
             const [text, setText] = useState('');
             const [isSlerActive, setIsSlerActive] = useState(false);
-            const anchoMolde = 30; // Isometría estricta de tu desarrollo
+            const [showPrintModal, setShowPrintModal] = useState(false);
+            const [printWidth, setPrintWidth] = useState(30);
+            const ANCHO_MOLDE = 30;
 
-            // MOTOR DE SEGMENTACIÓN SILÁBICA S.L.E.R.
-            const procesarSLER = (input) => {
+            const motorSegmentador = (input, ancho) => {
                 if (!input) return "";
-                
-                // Limpieza y preparación para el Algoritmo Madre
                 let palabras = input.trim().split(/\s+/);
                 let lineas = [];
                 let lineaActual = "";
 
-                palabras.forEach(palabra => {
-                    // Si la palabra cabe, se suma
-                    if ((lineaActual + palabra).length < anchoMolde) {
-                        lineaActual += (lineaActual === "" ? "" : " ") + palabra;
-                    } else {
-                        // Respetar la completitud visual antes de saltar
-                        lineas.push(lineaActual.padEnd(anchoMolde, '.'));
-                        lineaActual = palabra;
-                    }
-                });
-                lineas.push(lineaActual.padEnd(anchoMolde, '.'));
+                for (let i = 0; i < palabras.length; i++) {
+                    let p = palabras[i];
+                    let espacioDisp = ancho - lineaActual.length - (lineaActual ? 1 : 0);
 
-                // TRANSFORMACIÓN BINARIA RECÍPROCA
-                return lineas.map((linea, index) => {
-                    // Líneas pares (C): Inversión total para anular movimiento sacádico
-                    if (index % 2 !== 0) {
-                        return "..." + linea.split('').reverse().join('');
+                    if (p.length <= espacioDisp) {
+                        lineaActual += (lineaActual ? " " : "") + p;
+                    } else if (p.length > 6 && espacioDisp >= 3) {
+                        // REGLA DE GUIONES: Mínimo 2 letras por sílaba
+                        let corte = espacioDisp - 1; 
+                        if (corte < 2) corte = 2;
+                        if (p.length - corte < 2) corte = p.length - 2;
+
+                        let parte1 = p.substring(0, corte) + "-";
+                        let parte2 = p.substring(corte);
+                        
+                        lineaActual += (lineaActual ? " " : "") + parte1;
+                        lineas.push(lineaActual.padEnd(ancho, '.'));
+                        lineaActual = parte2;
+                    } else {
+                        lineas.push(lineaActual.padEnd(ancho, '.'));
+                        lineaActual = p;
                     }
-                    // Líneas impares (M): Flujo normal con anclaje
-                    return linea + "...";
+                }
+                if (lineaActual) lineas.push(lineaActual.padEnd(ancho, '.'));
+
+                return lineas.map((lin, idx) => {
+                    if (idx % 2 !== 0) return "......" + lin.split('').reverse().join('');
+                    return lin + "......";
                 }).join('\n');
             };
 
-            const handleToggleSler = () => {
-                // --- RENGLÓN 344: SEGURIDAD DEL ALGORITMO MADRE ---
-                // Protege la propiedad intelectual de 2025 ante uso indebido
-                if (text.length > 3500) { 
-                    alert("ALERTA: El usuario excede las funciones originales del Algoritmo Madre. Deteniendo proceso por seguridad IP 2025.");
-                    return;
+            const handleKeyDown = (e) => {
+                // Bloqueo de Enter para obligar al tope del renglón
+                if (e.key === "Enter") {
+                    let palabras = text.trim().split(/\s+/);
+                    let ultimaPalabra = palabras[palabras.length - 1] || "";
+                    if (text.length % ANCHO_MOLDE !== 0) {
+                        e.preventDefault();
+                        alert("S.L.E.R. info: Debe completar el renglón hasta el tope para avanzar. Respete la isometría.");
+                    }
                 }
-                setIsSlerActive(!isSlerActive);
-            };
-
-            const handleSaveFile = () => {
-                const element = document.createElement("a");
-                const finalContent = isSlerActive ? procesarSLER(text) : text;
-                const file = new Blob([finalContent], {type: 'text/plain'});
-                element.href = URL.createObjectURL(file);
-                element.download = `SLER_BellVille_Export.txt`;
-                document.body.appendChild(element);
-                element.click();
             };
 
             return (
                 <div className="max-w-3xl mx-auto my-10 p-6 bg-white shadow-2xl rounded-xl border-b-8 border-blue-600">
                     <header className="text-center mb-8">
                         <h1 className="text-3xl font-black text-blue-800 tracking-tighter">S.L.E.R.</h1>
-                        <p className="text-sm font-semibold text-gray-600">SISTEMA DE LECTURA Y ESCRITURA RECÍPROCO</p>
-                        <p className="text-xs text-blue-500 mt-1">Desarrollado por Jonatan Ribot - Bell Ville, Córdoba</p>
+                        <p className="text-sm font-semibold text-gray-600 uppercase">Sistema de Lectura y Escritura Recíproco</p>
+                        <p className="text-xs text-blue-500 mt-1">Jonatan Ribot - IP 2025 Argentina</p>
                     </header>
 
-                    <div className="space-y-4">
-                        <textarea 
-                            className="w-full h-48 p-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 outline-none transition-all"
-                            placeholder="Ingrese el texto para aplicar el método de lectura veloz isométrica..."
-                            value={text}
-                            onChange={(e) => setText(e.target.value)}
-                        />
+                    <textarea 
+                        className="w-full h-48 p-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 outline-none font-mono"
+                        placeholder="Escriba aquí respetando el tope del renglón..."
+                        value={text}
+                        onKeyDown={handleKeyDown}
+                        onChange={(e) => setText(e.target.value)}
+                    />
 
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <button 
-                                onClick={handleToggleSler}
-                                className={`flex-1 py-4 rounded-lg font-bold text-white shadow-lg transform active:scale-95 transition-all ${isSlerActive ? 'bg-orange-500' : 'bg-blue-600'}`}
-                            >
-                                {isSlerActive ? 'VOLVER A MODO NORMAL' : 'ACTIVAR MÉTODO S.L.E.R.'}
-                            </button>
-                            
-                            <button 
-                                onClick={handleSaveFile}
-                                className="bg-gray-800 text-white px-8 py-4 rounded-lg font-bold hover:bg-black transition-colors"
-                            >
-                                EXPORTAR .TXT
-                            </button>
-                        </div>
-
-                        {isSlerActive && (
-                            <div className="mt-8">
-                                <h3 className="text-xs font-bold text-gray-400 mb-2 uppercase">Salida Isométrica (30 Caracteres):</h3>
-                                <div className="sler-output bloque-isometria p-6 border rounded-lg overflow-x-auto text-lg">
-                                    {procesarSLER(text)}
-                                </div>
-                            </div>
-                        )}
+                    <div className="flex gap-4 mt-4">
+                        <button onClick={() => setIsSlerActive(!isSlerActive)} className="flex-1 py-4 bg-blue-600 text-white rounded-lg font-bold">
+                            {isSlerActive ? 'MODO NORMAL' : 'APLICAR S.L.E.R.'}
+                        </button>
+                        <button onClick={() => setShowPrintModal(true)} className="bg-gray-800 text-white px-6 rounded-lg font-bold">
+                            IMPRIMIR / EXPORTAR
+                        </button>
                     </div>
 
-                    <footer className="mt-12 pt-6 border-t text-center">
-                        <p className="text-[10px] text-gray-400">
-                            REGISTRO DE PROPIEDAD INTELECTUAL ARGENTINA 2025 - TODOS LOS DERECHOS RESERVADOS.
-                            PROCESADO BAJO PARÁMETROS DE NEURO-LECTURA BINARIA.
-                        </p>
+                    {isSlerActive && (
+                        <div className="mt-8 p-6 bg-gray-50 rounded-lg sler-output text-lg border-l-4 border-blue-500">
+                            {motorSegmentador(text, ANCHO_MOLDE)}
+                        </div>
+                    )}
+
+                    {/* MODAL DE IMPRESIÓN */}
+                    {showPrintModal && (
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
+                            <div className="bg-white p-8 rounded-xl max-w-sm w-full">
+                                <h2 className="font-bold mb-4">Configurar Extensión Isométrica</h2>
+                                <input 
+                                    type="range" min="30" max="120" value={printWidth} 
+                                    onChange={(e) => setPrintWidth(e.target.value)}
+                                    className="w-full mb-2"
+                                />
+                                <p className="text-center font-mono mb-6">{printWidth} caracteres</p>
+                                <div className="flex gap-2">
+                                    <button onClick={() => {
+                                        const win = window.open("", "_blank");
+                                        win.document.write(`<pre style="font-family:monospace">${motorSegmentador(text, printWidth)}</pre>`);
+                                        win.print();
+                                    }} className="flex-1 bg-blue-600 text-white py-2 rounded">Imprimir</button>
+                                    <button onClick={() => setShowPrintModal(false)} className="flex-1 bg-gray-200 py-2 rounded">Cerrar</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <footer className="mt-12 text-[10px] text-center text-gray-400 border-t pt-4">
+                        Bell Ville, Córdoba - Propiedad Intelectual 2025 Jonatan Ribot
                     </footer>
                 </div>
             );
