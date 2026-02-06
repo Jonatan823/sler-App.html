@@ -13,7 +13,8 @@
             border: 2px solid #edf2f7; 
             border-radius: 1rem; 
             padding: 2.5rem; 
-            overflow-x: auto; 
+            overflow-y: auto; 
+            overflow-x: hidden; /* BARRA DE ABAJO ELIMINADA */
             min-height: 350px;
             font-family: 'Consolas', 'Courier New', monospace;
             font-size: 1.15rem;
@@ -21,9 +22,13 @@
             color: #1a202c;
         }
 
-        .sler-line { display: block; white-space: pre; width: max-content; }
+        .sler-line { display: block; white-space: pre; width: 100%; }
         .input-mono { font-family: 'Consolas', 'Courier New', monospace; font-size: 1rem; }
         ::selection { background: #00e5ff; color: #000; }
+        
+        /* Estética del Scroll Vertical */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -66,108 +71,4 @@
     <script>
         const ed = document.getElementById('editor');
         const mainInput = document.getElementById('mainInput');
-        const tLab = document.getElementById('tChars'), sLab = document.getElementById('sChars'), mLab = document.getElementById('mChars');
-        let maxM = 0, esSlerActivo = false;
-
-        // 1. Calibración del Molde
-        function cal() {
-            const span = document.createElement('span');
-            span.style.font = "1.15rem 'Consolas', monospace";
-            span.innerText = "W"; document.body.appendChild(span);
-            maxM = Math.floor((ed.clientWidth - 80) / span.offsetWidth);
-            mLab.innerText = maxM; 
-            document.body.removeChild(span);
-        }
-        window.onresize = cal;
-        setTimeout(cal, 200);
-
-        // 2. Selección Global
-        document.addEventListener('selectionchange', () => {
-            const sel = window.getSelection().toString().length;
-            sLab.innerText = sel;
-        });
-
-        mainInput.oninput = () => tLab.innerText = mainInput.value.length;
-
-        // 3. Tratamiento de Signos
-        function tratarSignos(palabra, inverso) {
-            if (!inverso) return palabra;
-            const inicioMatch = palabra.match(/^([¿¡]+)/);
-            const finMatch = palabra.match(/([.,;!?]+)$/);
-            let limpia = palabra;
-            let sApertura = inicioMatch ? inicioMatch[1] : "";
-            let sCierre = finMatch ? finMatch[1] : "";
-            if (sApertura) limpia = limpia.substring(sApertura.length);
-            if (sCierre) limpia = limpia.substring(0, limpia.length - sCierre.length);
-            return sCierre + limpia + sApertura;
-        }
-
-        // 4. Motor S.L.E.R. con corrección de huerfanas y guionado [cite: 2026-01-23]
-        function renderSler() {
-            let txt = mainInput.value;
-            if (!txt.trim()) return;
-            
-            let mazo = txt.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim().split(' ');
-            let res = "", par = false;
-
-            while (mazo.length > 0) {
-                let lin = "";
-                // Construcción de línea respetando el molde
-                while (mazo.length > 0 && (lin.length + mazo[0].length + 1) <= maxM) {
-                    lin += (lin ? " " : "") + mazo.shift();
-                }
-                
-                // Lógica de Fraccionamiento (Evita letras sueltas como la "t" de Jonatan)
-                let h = maxM - lin.length;
-                if (h >= 2 && mazo.length > 0) {
-                    let p = mazo[0];
-                    let corte = h - 1;
-                    
-                    if (!par) {
-                        lin += (lin ? " " : "") + p.substring(0, corte) + "-";
-                    } else {
-                        lin += (lin ? " " : "") + "-" + p.substring(0, corte);
-                    }
-                    mazo[0] = p.substring(corte);
-                }
-
-                if (par) {
-                    // Línea Espejo (C) - Inversión de palabras y signos
-                    let inv = lin.split(' ').map(w => tratarSignos(w, true)).reverse().join(' ');
-                    let pad = " ".repeat(Math.max(0, maxM - inv.length));
-                    res += `<span class="sler-line">......${pad}${inv}</span>`;
-                } else {
-                    // Línea Madre (M)
-                    let pad = " ".repeat(Math.max(0, maxM - lin.length));
-                    res += `<span class="sler-line">${lin}${pad}......</span>`;
-                }
-                par = !par;
-            }
-            ed.innerHTML = res;
-        }
-
-        document.getElementById('btnSler').onclick = () => {
-            if (!esSlerActivo) {
-                renderSler();
-                document.getElementById('btnSler').innerText = "RESTABLECER MASA";
-                document.getElementById('btnSler').classList.replace('bg-blue-600', 'bg-orange-600');
-                esSlerActivo = true;
-            } else {
-                ed.innerHTML = "";
-                document.getElementById('btnSler').innerText = "EJECUTAR S.L.E.R.";
-                document.getElementById('btnSler').classList.replace('bg-orange-600', 'bg-blue-600');
-                esSlerActivo = false;
-            }
-        };
-
-        document.getElementById('btnExport').onclick = () => {
-            if (!ed.innerText) return alert("Ejecute SLER primero.");
-            const blob = new Blob(["REGISTRO IP 2025 - JONATAN RIBOT\n\n" + ed.innerText], {type: 'text/plain'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = "obra_sler_pc.txt";
-            a.click();
-        };
-    </script>
-</body>
-</html>
+        const tLab = document.getElementById('tChars'), sLab = document.getElementById('s
