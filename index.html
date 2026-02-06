@@ -1,38 +1,13 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S.L.E.R. - App Oficial - Jonatan Ribot</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background-color: #f3f4f6; font-family: sans-serif; }
-        .sler-output {
-            font-family: 'Courier New', Courier, monospace;
-            white-space: pre;
-            line-height: 1.5;
-            background: #ffffff;
-            color: #1f2937;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-    <div id="root"></div>
-
-    <script type="text/babel">
-        const { useState } = React;
+// ... (Dentro del bloque script type="text/babel")
 
         function MobileSLERApp() {
             const [text, setText] = useState('');
             const [isSlerActive, setIsSlerActive] = useState(false);
             const [showPrintModal, setShowPrintModal] = useState(false);
             const [printWidth, setPrintWidth] = useState(30);
-            const ANCHO_MOLDE = 30;
+            const ANCHO_MOLDE = 30; // Isometría validada en Nodo Bell Ville
 
+            // MOTOR DE SEGMENTACIÓN CON REGLA DE GUIONES Y ZIG-ZAG UNIFICADO
             const motorSegmentador = (input, ancho) => {
                 if (!input) return "";
                 let palabras = input.trim().split(/\s+/);
@@ -46,7 +21,7 @@
                     if (p.length <= espacioDisp) {
                         lineaActual += (lineaActual ? " " : "") + p;
                     } else if (p.length > 6 && espacioDisp >= 3) {
-                        // REGLA DE GUIONES: Mínimo 2 letras por sílaba
+                        // REGLA DE GUIONES (Mínimo 2 letras por sílaba) [cite: 2026-01-20]
                         let corte = espacioDisp - 1; 
                         if (corte < 2) corte = 2;
                         if (p.length - corte < 2) corte = p.length - 2;
@@ -64,20 +39,26 @@
                 }
                 if (lineaActual) lineas.push(lineaActual.padEnd(ancho, '.'));
 
+                // ESTRUCTURA VISUAL IDENTICA AL REPO DE TEST (Sin Negrita)
                 return lineas.map((lin, idx) => {
-                    if (idx % 2 !== 0) return "......" + lin.split('').reverse().join('');
-                    return lin + "......";
+                    const esPar = idx % 2 !== 0;
+                    if (esPar) {
+                        // Línea C: Inversión y advertencia de inconclusividad al inicio [cite: 2026-01-23]
+                        const invertida = lin.split('').reverse().join('');
+                        return "......" + invertida; 
+                    } else {
+                        // Línea M: Flujo normal con anclaje al final [cite: 2026-01-23]
+                        return lin + "......";
+                    }
                 }).join('\n');
             };
 
             const handleKeyDown = (e) => {
-                // Bloqueo de Enter para obligar al tope del renglón
+                // Validación de tope de renglón para salto manual
                 if (e.key === "Enter") {
-                    let palabras = text.trim().split(/\s+/);
-                    let ultimaPalabra = palabras[palabras.length - 1] || "";
                     if (text.length % ANCHO_MOLDE !== 0) {
                         e.preventDefault();
-                        alert("S.L.E.R. info: Debe completar el renglón hasta el tope para avanzar. Respete la isometría.");
+                        alert("S.L.E.R. info: Debe completar el renglón hasta el tope para avanzar.");
                     }
                 }
             };
@@ -87,7 +68,7 @@
                     <header className="text-center mb-8">
                         <h1 className="text-3xl font-black text-blue-800 tracking-tighter">S.L.E.R.</h1>
                         <p className="text-sm font-semibold text-gray-600 uppercase">Sistema de Lectura y Escritura Recíproco</p>
-                        <p className="text-xs text-blue-500 mt-1">Jonatan Ribot - IP 2025 Argentina</p>
+                        <p className="text-xs text-blue-500 mt-1">Jonatan Ribot - IP 2025 Argentina [cite: 2026-01-10]</p>
                     </header>
 
                     <textarea 
@@ -99,8 +80,11 @@
                     />
 
                     <div className="flex gap-4 mt-4">
-                        <button onClick={() => setIsSlerActive(!isSlerActive)} className="flex-1 py-4 bg-blue-600 text-white rounded-lg font-bold">
-                            {isSlerActive ? 'MODO NORMAL' : 'APLICAR S.L.E.R.'}
+                        <button 
+                            onClick={() => setIsSlerActive(!isSlerActive)} 
+                            className={`flex-1 py-4 rounded-lg font-bold text-white shadow-lg transition-all ${isSlerActive ? 'bg-orange-500' : 'bg-blue-600'}`}
+                        >
+                            {isSlerActive ? 'VOLVER A MODO NORMAL' : 'ACTIVAR MÉTODO S.L.E.R.'}
                         </button>
                         <button onClick={() => setShowPrintModal(true)} className="bg-gray-800 text-white px-6 rounded-lg font-bold">
                             IMPRIMIR / EXPORTAR
@@ -108,14 +92,18 @@
                     </div>
 
                     {isSlerActive && (
-                        <div className="mt-8 p-6 bg-gray-50 rounded-lg sler-output text-lg border-l-4 border-blue-500">
-                            {motorSegmentador(text, ANCHO_MOLDE)}
+                        <div className="mt-8">
+                            <h3 className="text-xs font-bold text-gray-400 mb-2 uppercase">Salida Isométrica (30 Caracteres):</h3>
+                            {/* Estructura visual replicada: Fuente mono, peso normal, misma extensión */}
+                            <div className="font-mono text-lg leading-relaxed bg-white p-6 border rounded-lg overflow-x-auto whitespace-pre text-gray-800">
+                                {motorSegmentador(text, ANCHO_MOLDE)}
+                            </div>
                         </div>
                     )}
 
-                    {/* MODAL DE IMPRESIÓN */}
+                    {/* MODAL DE IMPRESIÓN (Sin cambios en lógica de descarga) */}
                     {showPrintModal && (
-                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
                             <div className="bg-white p-8 rounded-xl max-w-sm w-full">
                                 <h2 className="font-bold mb-4">Configurar Extensión Isométrica</h2>
                                 <input 
@@ -127,7 +115,7 @@
                                 <div className="flex gap-2">
                                     <button onClick={() => {
                                         const win = window.open("", "_blank");
-                                        win.document.write(`<pre style="font-family:monospace">${motorSegmentador(text, printWidth)}</pre>`);
+                                        win.document.write(`<pre style="font-family:monospace; white-space:pre;">${motorSegmentador(text, printWidth)}</pre>`);
                                         win.print();
                                     }} className="flex-1 bg-blue-600 text-white py-2 rounded">Imprimir</button>
                                     <button onClick={() => setShowPrintModal(false)} className="flex-1 bg-gray-200 py-2 rounded">Cerrar</button>
@@ -137,14 +125,9 @@
                     )}
 
                     <footer className="mt-12 text-[10px] text-center text-gray-400 border-t pt-4">
-                        Bell Ville, Córdoba - Propiedad Intelectual 2025 Jonatan Ribot
+                        Bell Ville, Córdoba - Propiedad Intelectual 2025 Jonatan Ribot [cite: 2026-01-10]
                     </footer>
                 </div>
             );
         }
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<MobileSLERApp />);
-    </script>
-</body>
-</html>
+// ...
