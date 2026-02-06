@@ -8,18 +8,18 @@
         body { background-color: #f1f5f9; font-family: 'Segoe UI', sans-serif; }
         .sler-card { max-width: 1000px; margin: 2rem auto; background: white; border-radius: 1.2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
         
-        /* Simetría Total de Contenedores */
+        /* Simetría y Visibilidad de Relieve con altura tradicional */
         #mainInput, .output-box {
             overflow-y: scroll !important;
             overflow-x: hidden !important;
             display: block;
             scrollbar-gutter: stable;
-            height: 208px; /* Igualamos la altura exacta de h-52 de Tailwind */
         }
 
         .output-box { 
             background: #ffffff; border: 2px solid #edf2f7; border-radius: 1rem; 
             padding: 1.5rem 2rem; 
+            min-height: 350px; /* Restablecido a la versión anterior */
             font-family: 'Consolas', monospace; font-size: 1.15rem; 
             line-height: 1.7; color: #1a202c; outline: none;
         }
@@ -27,8 +27,10 @@
         .sler-line { display: block; white-space: pre; width: 100%; }
         ::selection { background: #00e5ff; color: #000; }
         
-        /* Relieve de Scroll para evitar el "cruce tectónico" */
-        ::-webkit-scrollbar { width: 14px; }
+        /* DISEÑO DE LA BARRA (Relieve y Contraste) */
+        ::-webkit-scrollbar { 
+            width: 14px; 
+        }
         ::-webkit-scrollbar-track { 
             background: #f1f5f9; 
             border-left: 1px solid #e2e8f0;
@@ -38,6 +40,9 @@
             background: #cbd5e1; 
             border: 3px solid #f1f5f9; 
             border-radius: 10px; 
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
     </style>
 </head>
@@ -59,11 +64,8 @@
             </div>
             
             <textarea id="mainInput" 
-                class="w-full p-6 border-2 border-slate-100 rounded-2xl focus:border-cyan-400 outline-none font-mono text-slate-700 shadow-inner resize-none transition-all"
+                class="w-full h-52 p-6 border-2 border-slate-100 rounded-2xl focus:border-cyan-400 outline-none font-mono text-slate-700 shadow-inner resize-none transition-all"
                 placeholder="Pegue su texto aquí..."></textarea>
 
             <div class="flex gap-4">
-                <button id="btnSler" class="flex-[2] py-5 bg-blue-600 text-white rounded-2xl font-black shadow-lg hover:bg-blue-700 transition-all uppercase tracking-widest text-sm">
-                    EJECUTAR S.L.E.R.
-                </button>
-                <button id="btnExport" class="flex-1 bg-slate-
+                <button id="btnSler" class="flex-[2] py-5 bg-blue-600 text-white rounded-2xl font-black shadow-lg hover:bg-blue-700
