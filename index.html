@@ -3,130 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chat-SLER Mobile</title>
+    <title>Chat-SLER Mobile - Vínculos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --bg: #020d18; --accent: #0ea5e9; --card: #0a2438; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; }
+        :root { --bg: #020d18; --accent: #0ea5e9; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; }
         
-        /* Contenedor del Chat Móvil */
-        .mobile-container {
-            display: flex; flex-direction: column; height: 100vh; max-width: 500px; margin: 0 auto;
-            border-left: 1px solid #1e293b; border-right: 1px solid #1e293b;
-        }
+        .mobile-view { max-width: 450px; margin: 0 auto; height: 100vh; display: flex; flex-direction: column; border-left: 1px solid #1e293b; border-right: 1px solid #1e293b; }
 
-        /* Cabecera: Foco en Identidad y Seguridad */
-        .header-chat {
-            padding: 15px; background: #061b2d; border-bottom: 1px solid #1e293b;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-
-        /* Burbujas de Chat con Lógica SLER */
-        .chat-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+        /* Header con Usuario Ficticio */
+        .header { padding: 15px; background: #061b2d; border-bottom: 2px solid var(--accent); display: flex; align-items: center; justify-content: space-between; }
         
-        .bubble {
-            max-width: 85%; padding: 12px 16px; border-radius: 1.2rem; font-size: 15px;
-            line-height: 1.5; position: relative; animation: fadeIn 0.3s ease;
-        }
-        
-        .bubble-in { background: #1e293b; align-self: flex-start; border-bottom-left-radius: 0.2rem; }
-        .bubble-out { background: var(--accent); align-self: flex-end; border-bottom-right-radius: 0.2rem; }
+        .chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: radial-gradient(circle at center, #0a2438 0%, #020d18 100%); }
 
-        /* Regla SLER en el mensaje */
-        .sler-text div:nth-child(even) {
-            direction: rtl; text-align: right; font-weight: 800; color: #93c5fd;
-        }
+        /* Burbujas */
+        .bubble { max-width: 85%; padding: 12px 18px; border-radius: 1.5rem; font-size: 16px; position: relative; animation: slideUp 0.3s ease-out; }
+        .in { background: #1e293b; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .out { background: var(--accent); align-self: flex-end; border-bottom-right-radius: 4px; font-weight: 500; }
 
-        /* Timer de Efimeridad */
-        .timer-bar {
-            height: 2px; background: rgba(255,255,255,0.3); width: 100%;
-            position: absolute; bottom: 0; left: 0; border-radius: 2px;
-        }
-        .timer-progress { height: 100%; background: #ef4444; width: 0%; transition: width 600s linear; }
+        /* Estilo SLER en los mensajes de entrada */
+        .sler-msg div:nth-child(even) { direction: rtl; text-align: right; color: #7dd3fc; font-weight: 900; margin: 4px 0; }
 
-        /* Footer de Entrada */
-        .input-area { padding: 15px; background: #061b2d; display: flex; gap: 10px; align-items: center; }
-        .input-field {
-            flex: 1; background: #0a2438; border: 1px solid #1e293b; border-radius: 2rem;
-            padding: 10px 20px; color: white; outline: none; font-size: 14px;
-        }
+        /* Timer de Efimeridad (10 min) */
+        .timer { position: absolute; bottom: 0; left: 10%; right: 10%; height: 2px; background: rgba(255,255,255,0.1); overflow: hidden; }
+        .progress { height: 100%; background: #ef4444; width: 0%; transition: width 600s linear; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-<div class="mobile-container">
-    <header class="header-chat">
+<div class="mobile-view">
+    <header class="header">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-sky-500 rounded-full flex items-center justify-center font-bold">RJ</div>
+            <div class="w-12 h-12 bg-slate-700 rounded-full border-2 border-sky-400 flex items-center justify-center text-xl font-black">AM</div>
             <div>
-                <h2 class="text-sm font-black tracking-tight">Ribot Jonatan</h2>
-                <span class="text-[10px] text-emerald-400 font-bold uppercase">● Vínculo Seguro</span>
+                <h2 class="text-sm font-black tracking-wide">Arq. Marcelo</h2>
+                <div class="flex items-center gap-1">
+                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                    <span class="text-[10px] text-emerald-400 font-bold uppercase">Conexión Segura</span>
+                </div>
             </div>
         </div>
         <div class="text-right">
-            <div class="text-[10px] font-black text-slate-500 uppercase">Agente Filtro</div>
-            <div class="text-[10px] text-sky-400 font-bold">ACTIVO</div>
+            <div class="text-[9px] font-black text-slate-500 uppercase">Encriptación</div>
+            <div class="text-[9px] text-sky-400 font-black italic">M-to-M Active</div>
         </div>
     </header>
 
     <main id="chatArea" class="chat-area">
-        <div class="bubble bubble-in shadow-xl" id="msg1">
-            <div class="sler-text">
-                <div>Hola, he revisado el material del libro.</div>
-                <div>.progreso el con entusiasma me Realmente</div>
-                <div>Mañana integraremos el chat-sler.</div>
-            </div>
-            <div class="timer-bar"><div class="timer-progress" id="t1"></div></div>
-        </div>
-
-        <div class="text-[9px] text-center text-slate-600 font-bold uppercase my-2">
-            Los mensajes leídos desaparecen instantáneamente
+        <div class="bubble in sler-msg">
+            <div>Hola Jonatan, ¿cómo va el sistema?</div>
+            <div>.libro del parte nueva la ver de Ganas</div>
+            <div class="timer"><div class="progress" style="width: 15%"></div></div>
         </div>
     </main>
 
-    <footer class="input-area">
-        <button class="text-slate-400 p-2">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-        </button>
-        <input type="text" id="userInput" class="input-field" placeholder="Mensaje encriptado...">
-        <button onclick="enviarMensaje()" class="bg-sky-600 p-2 rounded-full text-white">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-        </button>
+    <footer class="p-4 bg-[#061b2d]">
+        <div class="flex gap-2">
+            <input type="text" id="userInput" onkeypress="handleKey(event)" placeholder="Escribe un mensaje seguro..." class="flex-1 bg-[#020d18] border border-slate-700 rounded-full px-5 py-3 text-sm outline-none focus:border-sky-500 transition-all">
+            <button onclick="enviar()" class="bg-sky-600 w-12 h-12 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </button>
+        </div>
     </footer>
 </div>
 
 <script>
-    // Iniciar temporizador de efimeridad para el primer mensaje (10 min = 600s)
-    setTimeout(() => { document.getElementById('t1').style.width = '100%'; }, 100);
+    const area = document.getElementById('chatArea');
 
-    function enviarMensaje() {
+    function handleKey(e) { if(e.key === 'Enter') enviar(); }
+
+    function enviar() {
         const input = document.getElementById('userInput');
-        const chatArea = document.getElementById('chatArea');
-        
-        if (input.value.trim() === "") return;
+        if(!input.value.trim()) return;
 
-        const id = Date.now();
-        const bubble = document.createElement('div');
-        bubble.className = "bubble bubble-out shadow-xl";
-        bubble.id = `msg-${id}`;
-        bubble.innerHTML = `
-            <div class="sler-text">
-                <div>${input.value}</div>
-            </div>
-            <div class="timer-bar"><div class="timer-progress" style="width:100%; transition: width 600s linear;"></div></div>
-        `;
+        // Crear burbuja de salida
+        const msgOut = document.createElement('div');
+        msgOut.className = 'bubble out';
+        msgOut.innerText = input.value;
+        area.appendChild(msgOut);
 
-        chatArea.appendChild(bubble);
-        input.value = "";
-        chatArea.scrollTop = chatArea.scrollHeight;
+        const text = input.value.toLowerCase();
+        input.value = '';
+        area.scrollTop = area.scrollHeight;
 
-        // Simulación de auto-destrucción al ser leído (ejemplo a los 5 segundos para demo)
+        // Simular respuesta del Arq. Marcelo tras 2 segundos
         setTimeout(() => {
-            bubble.style.opacity = "0";
-            setTimeout(() => bubble.remove(), 500);
-        }, 15000);
+            const msgIn = document.createElement('div');
+            msgIn.className = 'bubble in sler-msg';
+            
+            let respuesta = "";
+            if(text.includes("hola")) respuesta = "<div>Hola. Recibido perfectamente.</div><div>.punto el a vamos ,S.L.E.R. Entendido</div>";
+            else if(text.includes("libro")) respuesta = "<div>Excelente. La estructura nativa es clave.</div><div>.2026 para paper el con seguimos Avanza</div>";
+            else respuesta = "<div>Mensaje procesado por el Agente.</div><div>.lectura de flujo el mantiene se ,Correcto</div>";
+
+            msgIn.innerHTML = respuesta + '<div class="timer"><div class="progress" id="p-'+Date.now()+'"></div></div>';
+            area.appendChild(msgIn);
+            area.scrollTop = area.scrollHeight;
+            
+            // Iniciar timer visual
+            setTimeout(() => { document.querySelector('.progress:last-child').style.width = "100%"; }, 100);
+        }, 1500);
     }
 </script>
 
