@@ -2,215 +2,133 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S.L.E.R. - Workstation Oficial</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chat-SLER Mobile</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root {
-            --bg-main: #041625;
-            --sler-blue: #0ea5e9;
-            --sler-turq: #00ffcc;
-            --dark-card: #0a2438;
+        :root { --bg: #020d18; --accent: #0ea5e9; --card: #0a2438; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; }
+        
+        /* Contenedor del Chat Móvil */
+        .mobile-container {
+            display: flex; flex-direction: column; height: 100vh; max-width: 500px; margin: 0 auto;
+            border-left: 1px solid #1e293b; border-right: 1px solid #1e293b;
         }
 
-        body { 
-            background-color: var(--bg-main); 
-            font-family: 'Segoe UI', sans-serif; 
-            margin: 0; padding: 0;
-            color: white;
+        /* Cabecera: Foco en Identidad y Seguridad */
+        .header-chat {
+            padding: 15px; background: #061b2d; border-bottom: 1px solid #1e293b;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* Burbujas de Chat con Lógica SLER */
+        .chat-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+        
+        .bubble {
+            max-width: 85%; padding: 12px 16px; border-radius: 1.2rem; font-size: 15px;
+            line-height: 1.5; position: relative; animation: fadeIn 0.3s ease;
         }
         
-        /* Contenedor con color de marca */
-        .sler-card { 
-            max-width: 1000px; 
-            margin: 0 auto; 
-            background: var(--dark-card); 
-            border: 1px solid #1e3a53;
-            width: 100%;
-            min-height: 100vh;
+        .bubble-in { background: #1e293b; align-self: flex-start; border-bottom-left-radius: 0.2rem; }
+        .bubble-out { background: var(--accent); align-self: flex-end; border-bottom-right-radius: 0.2rem; }
+
+        /* Regla SLER en el mensaje */
+        .sler-text div:nth-child(even) {
+            direction: rtl; text-align: right; font-weight: 800; color: #93c5fd;
         }
 
-        @media (min-width: 768px) {
-            .sler-card { margin: 2rem auto; border-radius: 1.5rem; min-height: auto; width: 95%; }
+        /* Timer de Efimeridad */
+        .timer-bar {
+            height: 2px; background: rgba(255,255,255,0.3); width: 100%;
+            position: absolute; bottom: 0; left: 0; border-radius: 2px;
+        }
+        .timer-progress { height: 100%; background: #ef4444; width: 0%; transition: width 600s linear; }
+
+        /* Footer de Entrada */
+        .input-area { padding: 15px; background: #061b2d; display: flex; gap: 10px; align-items: center; }
+        .input-field {
+            flex: 1; background: #0a2438; border: 1px solid #1e293b; border-radius: 2rem;
+            padding: 10px 20px; color: white; outline: none; font-size: 14px;
         }
 
-        /* Ajuste de altura dinámica para ver ambos en una pantalla de móvil */
-        #mainInput, .output-box {
-            height: 150px; /* Altura optimizada para que ambos entren en el viewport */
-            background: white;
-            color: #1a202c;
-            border-radius: 0.75rem;
-            font-family: 'Consolas', monospace;
-        }
-
-        @media (min-width: 768px) {
-            #mainInput, .output-box { height: 260px; font-size: 1.1rem; }
-        }
-
-        .output-box { 
-            overflow-y: auto; padding: 1rem; border: 3px solid var(--sler-blue);
-        }
-
-        .sler-line { display: block; white-space: pre; width: 100%; }
-        
-        /* Botones con colores vivos */
-        .btn-execute { background: #2563eb; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4); }
-        .btn-reset { background: #ea580c; box-shadow: 0 4px 14px rgba(234, 88, 12, 0.4); }
-        .btn-export { background: #1e293b; border: 1px solid #334155; }
-
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div class="sler-card">
-        <header class="py-3 bg-slate-900/50 text-center border-b border-blue-900/50">
-            <h1 class="text-2xl font-black tracking-tighter">S.L.E.<span class="text-cyan-400">R.</span></h1>
-            <p class="text-[8px] text-cyan-500 font-bold uppercase tracking-widest">Jonatan Ribot - Bell Ville</p>
-        </header>
-
-        <div class="p-3 md:p-8 space-y-3">
-            
-            <div class="flex justify-between items-center bg-black/40 px-4 py-2 rounded-lg font-mono text-[10px] border border-blue-900/30">
-                <div>MASA: <span id="tChars" class="text-white">0</span></div>
-                <div class="text-cyan-400">MOLDE: <span id="mChars" class="text-white">---</span></div>
-                <div>SEL: <span id="sChars" class="text-orange-400">0</span></div>
-            </div>
-            
-            <textarea id="mainInput" class="w-full p-3 outline-none shadow-inner resize-none text-sm border-2 border-transparent focus:border-cyan-400 transition-all" placeholder="Pegue su texto aquí..."></textarea>
-
-            <div class="flex gap-2">
-                <button id="btnSler" class="flex-[2] py-3 btn-execute text-white rounded-xl font-black text-[11px] uppercase tracking-widest transition-all active:scale-95">EJECUTAR S.L.E.R.</button>
-                <button id="btnOpenExport" class="flex-1 py-3 btn-export text-white rounded-xl font-bold text-[10px] uppercase">EXPORTAR</button>
-            </div>
-
-            <div id="resultArea">
-                <div id="editor" class="output-box shadow-2xl text-[0.85rem] md:text-[1rem]"></div>
-            </div>
-            
-            <p class="text-[8px] text-center text-slate-500 uppercase font-bold tracking-[0.3em] pt-2">Registro IP 2025 - Argentina</p>
-        </div>
-    </div>
-
-    <div id="exportModal" class="fixed inset-0 bg-black/90 hidden z-50 items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-slate-900 p-6 rounded-2xl w-full max-w-sm border border-cyan-500/50 shadow-2xl">
-            <h2 class="text-white font-black mb-4 text-center tracking-tighter">CONFIGURAR SALIDA</h2>
-            <div class="space-y-4">
-                <input type="number" id="exportM" value="80" class="w-full p-3 bg-black text-cyan-400 border border-slate-700 rounded-xl text-center font-bold text-xl">
-                <select id="exportF" class="w-full p-3 bg-black text-white border border-slate-700 rounded-xl font-bold uppercase text-xs">
-                    <option value="txt">Formato .TXT</option>
-                    <option value="pdf">Formato .PDF</option>
-                </select>
-                <div class="flex gap-2">
-                    <button id="btnCancel" class="flex-1 py-3 text-slate-500 font-bold uppercase text-[10px]">Cerrar</button>
-                    <button id="btnConfirmExport" class="flex-[2] py-3 bg-cyan-600 text-white rounded-xl font-black uppercase text-[10px]">Descargar</button>
-                </div>
+<div class="mobile-container">
+    <header class="header-chat">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-sky-500 rounded-full flex items-center justify-center font-bold">RJ</div>
+            <div>
+                <h2 class="text-sm font-black tracking-tight">Ribot Jonatan</h2>
+                <span class="text-[10px] text-emerald-400 font-bold uppercase">● Vínculo Seguro</span>
             </div>
         </div>
-    </div>
+        <div class="text-right">
+            <div class="text-[10px] font-black text-slate-500 uppercase">Agente Filtro</div>
+            <div class="text-[10px] text-sky-400 font-bold">ACTIVO</div>
+        </div>
+    </header>
 
-    <script>
-        const { jsPDF } = window.jspdf;
-        const ed = document.getElementById('editor'), mainInput = document.getElementById('mainInput');
-        const tLab = document.getElementById('tChars'), sLab = document.getElementById('sChars'), mLab = document.getElementById('mChars');
-        const modal = document.getElementById('exportModal');
-        let maxM = 0, esSlerActivo = false;
+    <main id="chatArea" class="chat-area">
+        <div class="bubble bubble-in shadow-xl" id="msg1">
+            <div class="sler-text">
+                <div>Hola, he revisado el material del libro.</div>
+                <div>.progreso el con entusiasma me Realmente</div>
+                <div>Mañana integraremos el chat-sler.</div>
+            </div>
+            <div class="timer-bar"><div class="timer-progress" id="t1"></div></div>
+        </div>
 
-        function cal() {
-            const span = document.createElement('span');
-            const fontSize = window.innerWidth < 768 ? "0.85rem" : "1.1rem";
-            span.style.font = `${fontSize} 'Consolas', monospace`;
-            span.innerText = "W"; document.body.appendChild(span);
-            const offset = window.innerWidth < 768 ? 30 : 100;
-            maxM = Math.floor((ed.clientWidth - offset) / span.offsetWidth);
-            mLab.innerText = maxM; 
-            document.body.removeChild(span);
-        }
+        <div class="text-[9px] text-center text-slate-600 font-bold uppercase my-2">
+            Los mensajes leídos desaparecen instantáneamente
+        </div>
+    </main>
+
+    <footer class="input-area">
+        <button class="text-slate-400 p-2">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        </button>
+        <input type="text" id="userInput" class="input-field" placeholder="Mensaje encriptado...">
+        <button onclick="enviarMensaje()" class="bg-sky-600 p-2 rounded-full text-white">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        </button>
+    </footer>
+</div>
+
+<script>
+    // Iniciar temporizador de efimeridad para el primer mensaje (10 min = 600s)
+    setTimeout(() => { document.getElementById('t1').style.width = '100%'; }, 100);
+
+    function enviarMensaje() {
+        const input = document.getElementById('userInput');
+        const chatArea = document.getElementById('chatArea');
         
-        window.onresize = cal;
-        setTimeout(cal, 200);
+        if (input.value.trim() === "") return;
 
-        function tratarSignos(p, inv) {
-            if (!inv) return p;
-            const ini = p.match(/^([¿¡(]+)/), fin = p.match(/([.,;!?)]+)$/);
-            let limpia = p, sA = ini ? ini[1] : "", sC = fin ? fin[1] : "";
-            if (sA) limpia = limpia.substring(sA.length);
-            if (sC) limpia = limpia.substring(0, limpia.length - sC.length);
-            return sC + limpia + sA;
-        }
+        const id = Date.now();
+        const bubble = document.createElement('div');
+        bubble.className = "bubble bubble-out shadow-xl";
+        bubble.id = `msg-${id}`;
+        bubble.innerHTML = `
+            <div class="sler-text">
+                <div>${input.value}</div>
+            </div>
+            <div class="timer-bar"><div class="timer-progress" style="width:100%; transition: width 600s linear;"></div></div>
+        `;
 
-        function renderSler(moldeCustom = null) {
-            let m = moldeCustom || maxM;
-            let txt = mainInput.value.trim().replace(/\s+/g, ' ');
-            if (!txt) return "";
-            let mazo = txt.split(' '), res = "", par = false;
-            while (mazo.length > 0) {
-                let lin = "";
-                while (mazo.length > 0 && (lin.length + mazo[0].length + 1) <= m) lin += (lin ? " " : "") + mazo.shift();
-                let h = m - lin.length;
-                if (h >= 3 && mazo.length > 0) {
-                    let p = mazo[0], corte = h - 1;
-                    if (corte >= 2 && (p.length - corte) >= 2) {
-                        if (!par) lin += (lin ? " " : "") + p.substring(0, corte) + "-";
-                        else lin += (lin ? " " : "") + "-" + p.substring(0, corte);
-                        mazo[0] = p.substring(corte);
-                    }
-                }
-                let pad = " ".repeat(Math.max(0, m - lin.length));
-                if (par) {
-                    let inv = lin.split(' ').map(w => tratarSignos(w, true)).reverse().join(' ');
-                    let padInv = " ".repeat(Math.max(0, m - inv.length));
-                    res += (moldeCustom ? "" : `<span class="sler-line">`) + `......${padInv}${inv}` + (moldeCustom ? "\n" : `</span>`);
-                } else {
-                    res += (moldeCustom ? "" : `<span class="sler-line">`) + `${lin}${pad}......` + (moldeCustom ? "\n" : `</span>`);
-                }
-                par = !par;
-            }
-            return res;
-        }
+        chatArea.appendChild(bubble);
+        input.value = "";
+        chatArea.scrollTop = chatArea.scrollHeight;
 
-        document.getElementById('btnSler').onclick = () => {
-            const btn = document.getElementById('btnSler');
-            if (!esSlerActivo) {
-                ed.innerHTML = renderSler();
-                btn.innerText = "RESTABLECER";
-                btn.className = "flex-[2] py-3 btn-reset text-white rounded-xl font-black text-[11px] uppercase";
-                esSlerActivo = true;
-            } else {
-                ed.innerHTML = "";
-                btn.innerText = "EJECUTAR S.L.E.R.";
-                btn.className = "flex-[2] py-3 btn-execute text-white rounded-xl font-black text-[11px] uppercase";
-                esSlerActivo = false;
-            }
-        };
+        // Simulación de auto-destrucción al ser leído (ejemplo a los 5 segundos para demo)
+        setTimeout(() => {
+            bubble.style.opacity = "0";
+            setTimeout(() => bubble.remove(), 500);
+        }, 15000);
+    }
+</script>
 
-        document.getElementById('btnOpenExport').onclick = () => modal.style.display = 'flex';
-        document.getElementById('btnCancel').onclick = () => modal.style.display = 'none';
-        document.getElementById('btnConfirmExport').onclick = () => {
-            const m = Math.min(parseInt(document.getElementById('exportM').value), 120);
-            const format = document.getElementById('exportF').value;
-            const content = renderSler(m);
-            if (format === 'txt') {
-                const blob = new Blob(["REGISTRO IP 2025 - SISTEMA S.L.E.R.\n\n" + content], {type: 'text/plain'});
-                const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-                a.download = `sler_isometria_${m}.txt`; a.click();
-            } else {
-                const doc = new jsPDF({ orientation: m > 90 ? "l" : "p", unit: "mm", format: "a4" });
-                doc.setFont("courier", "bold"); doc.setFontSize(10);
-                const lineas = content.split('\n');
-                let y = 20;
-                doc.text("REGISTRO IP 2025 - JONATAN RIBOT - SISTEMA S.L.E.R.", 15, 12);
-                lineas.forEach(linea => {
-                    if (y > (doc.internal.pageSize.getHeight() - 15)) { doc.addPage(); y = 20; }
-                    doc.text(linea, 15, y); y += 5.5; 
-                });
-                doc.save(`sler_isometria_${m}.pdf`);
-            }
-            modal.style.display = 'none';
-        };
-
-        mainInput.oninput = () => tLab.innerText = mainInput.value.length;
-        document.addEventListener('selectionchange', () => { sLab.innerText = window.getSelection().toString().length; });
-    </script>
 </body>
 </html>
